@@ -1,0 +1,24 @@
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+# Proto library for all messages
+proto_library(
+    name = "messages_proto",
+    srcs = ["messages.proto"],
+    visibility = ["//visibility:public"],
+)
+
+# Proto library for CMS service
+proto_library(
+    name = "cms_proto",
+    srcs = ["cms.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":messages_proto"],
+)
+
+# Proto library for Discovery service
+proto_library(
+    name = "discovery_proto",
+    srcs = ["discovery.proto"],
+    visibility = ["//visibility:public"],
+    deps = [":messages_proto"],
+)

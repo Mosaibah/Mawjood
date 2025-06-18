@@ -1,0 +1,46 @@
+version: '3'
+
+vars:
+  BAZEL: bazel
+  PROTO_DIR: packages/proto/v1
+  GEN_DIR: gen/go
+
+tasks:
+  proto:build:
+    desc: Build protobuf files with Bazel
+    cmds:
+      - '{{.BAZEL}} build //{{.PROTO_DIR}}:all'
+    sources:
+      - '{{.PROTO_DIR}}/*.proto'
+
+  proto:generate:
+    desc: Generate Go code from protobuf files using protoc
+    cmds:
+      - mkdir -p {{.GEN_DIR}}
+      - protoc --go_out={{.GEN_DIR}} --go_opt=paths=source_relative --go-grpc_out={{.GEN_DIR}} --go-grpc_opt=paths=source_relative {{.PROTO_DIR}}/*.proto
+    sources:
+      - '{{.PROTO_DIR}}/*.proto'
+    generates:
+      - '{{.GEN_DIR}}/**/*.go'
+
+  proto:all:
+    desc: Build protobuf files and generate Go code
+    cmds:
+      - task proto:build
+      - task proto:generate
+    deps: [proto:build, proto:generate]
+
+  status:
+    desc: Show project status
+    cmds:
+      - echo "=== Mawjood Project Status ==="
+      - echo "Proto files:"
+      - ls -la {{.PROTO_DIR}}/*.proto
+      - echo ""
+      - echo "Generated Go files:"
+      - find {{.GEN_DIR}} -name "*.go" -type f 2>/dev/null || echo "No Go files generated yet"
+
+  default:
+    desc: Show project status
+    cmds:
+      - task status 

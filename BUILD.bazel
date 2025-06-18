@@ -1,0 +1,6 @@
+load("@gazelle//:def.bzl", "gazelle")
+
+gazelle(name = "gazelle")
+
+# gazelle:prefix github.com/Mosaibah/Mawjood
+# gazelle:proto_import_prefix mawjood/

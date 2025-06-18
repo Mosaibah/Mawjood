@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package mawjood.v1;
+
+option go_package = "github.com/mosaibah/Mawjood/gen/go/mawjood/v1;mawjoodv1";
+
+// import "google/protobuf/timestamp.proto"; // Temporarily commented out
+
+enum ContentType {
+  CONTENT_TYPE_UNSPECIFIED = 0;
+  CONTENT_TYPE_PODCAST = 1;
+  CONTENT_TYPE_DOCUMENTARY = 2;
+}
+
+message Content {
+  string id = 1; // UUID
+  string title = 2;
+  string description = 3;
+  repeated string tags = 4;
+  string language = 5;
+  int32 duration_seconds = 6;
+  string published_at = 7; // Temporarily changed from google.protobuf.Timestamp
+  ContentType content_type = 8;
+  string created_at = 9; // Temporarily changed from google.protobuf.Timestamp
+  string updated_at = 10; // Temporarily changed from google.protobuf.Timestamp
+  string external_url = 11;
+  string platform_name = 12;
+}
+
+message CreateContentRequest {
+  string title = 1;
+  string description = 2;
+  repeated string tags = 3;
+  string language = 4;
+  int32 duration_seconds = 5;
+  string published_at = 6; // Temporarily changed from google.protobuf.Timestamp
+  ContentType content_type = 7;
+  string external_url = 8;
+  string platform_name = 9;
+}
+
+message GetContentRequest {
+  string id = 1; // UUID
+}
+
+message UpdateContentRequest {
+  string id = 1; // UUID
+  string title = 2;
+  string description = 3;
+  repeated string tags = 4;
+  string language = 5;
+  int32 duration_seconds = 6;
+  string published_at = 7; // Temporarily changed from google.protobuf.Timestamp
+  ContentType content_type = 8;
+  string external_url = 9;
+  string platform_name = 10;
+}
+
+message DeleteContentRequest {
+  string id = 1; // UUID
+}
+
+message ListContentsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListContentsResponse {
+  repeated Content contents = 1;
+  string next_page_token = 2;
+}
+
+message SearchContentsRequest {
+  string query = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+message SearchContentsResponse {
+  repeated Content contents = 1;
+  string next_page_token = 2;
+}
+
+message ImportRequest {
+    string url = 1;
+}
+
+message ImportResponse {
+    Content content = 1;
+}
+
+// Temporary empty message for DeleteContent
+message Empty {} 

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package mawjood.v1;
+
+option go_package = "github.com/mosaibah/Mawjood/gen/go/mawjood/v1;mawjoodv1";
+
+// import "google/protobuf/empty.proto"; // Temporarily commented out
+import "packages/proto/v1/messages.proto";
+
+// Service for content management (admin operations)
+service CMSService {
+  // Creates a new piece of content
+  rpc CreateContent(CreateContentRequest) returns (Content);
+  
+  // Updates an existing piece of content
+  rpc UpdateContent(UpdateContentRequest) returns (Content);
+  
+  // Deletes a piece of content
+  rpc DeleteContent(DeleteContentRequest) returns (Empty);
+  
+  // Lists all content for admin management
+  rpc ListContents(ListContentsRequest) returns (ListContentsResponse);
+  
+  // Imports content from external sources
+  rpc ImportFromExternal(ImportRequest) returns (ImportResponse);
+} 
