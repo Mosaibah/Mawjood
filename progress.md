@@ -10,20 +10,20 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [X] Initialize Bazel as the build system within the workspace.
 - [X] Define the `DiscoveryService` API contract in `packages/proto/mawjood/v1/discovery.proto`.
 - [X] Define the `CMSService` API contract in `packages/proto/mawjood/v1/cms.proto`.
-- [ ] Configure Bazel to generate Go gRPC code from the `.proto` files into `gen/go`.
-- [ ] Test the proto generation to ensure the build system is working correctly.
+- [X] Configure Bazel to generate Go gRPC code from the `.proto` files into `gen/go`.
+- [X] Test the proto generation to ensure the build system is working correctly.
 
 ## Phase 2: Database Setup
-- [ ] **Status:** `Not Started`
+- [X] **Status:** `Completed`
 - **Goal:** Establish the database schema and populate it with initial data.
 
-- [ ] Set up a local CockroachDB instance using Docker.
-- [ ] Write the SQL script to create the `platforms`, `contents`, `tags`, and `content_tags` tables.
-- [ ] Apply the database schema.
-- [ ] Write the SQL script to create all necessary indexes for searching and relationships.
-- [ ] Apply the indexes.
-- [ ] Write a seeding script to insert the initial platform data (YouTube, Spotify, etc.).
-- [ ] Run the seed script.
+- [X] Set up a local CockroachDB instance using Docker.
+- [X] Write the SQL script to create the `platforms`, `contents`, `tags`, and `content_tags` tables.
+- [X] Apply the database schema.
+- [X] Write the SQL script to create all necessary indexes for searching and relationships.
+- [X] Apply the indexes.
+- [X] Write a seeding script to insert the initial platform data (YouTube, Spotify, etc.).
+- [X] Run the seed script.
 
 ## Phase 3: CMS Service Implementation
 - [ ] **Status:** `Not Started`
