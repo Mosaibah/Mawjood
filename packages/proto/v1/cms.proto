@@ -2,10 +2,9 @@ syntax = "proto3";
 
 package mawjood.v1;
 
-option go_package = "github.com/mosaibah/Mawjood/gen/go/mawjood/v1;mawjoodv1";
 
-// import "google/protobuf/empty.proto"; // Temporarily commented out
-import "packages/proto/v1/messages.proto";
+import "messages.proto";
+import "google/protobuf/empty.proto";
 
 // Service for content management (admin operations)
 service CMSService {
@@ -16,7 +15,7 @@ service CMSService {
   rpc UpdateContent(UpdateContentRequest) returns (Content);
   
   // Deletes a piece of content
-  rpc DeleteContent(DeleteContentRequest) returns (Empty);
+  rpc DeleteContent(DeleteContentRequest) returns (google.protobuf.Empty);
   
   // Lists all content for admin management
   rpc ListContents(ListContentsRequest) returns (ListContentsResponse);

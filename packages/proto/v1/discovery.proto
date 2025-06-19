@@ -2,9 +2,7 @@ syntax = "proto3";
 
 package mawjood.v1;
 
-option go_package = "github.com/mosaibah/Mawjood/gen/go/mawjood/v1;mawjoodv1";
-
-import "packages/proto/v1/messages.proto";
+import "messages.proto";
 
 // Service for user-facing content discovery and search
 service DiscoveryService {

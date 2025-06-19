@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "cms",
+    srcs = ["service.go"],
+    importpath = "github.com/mosaibah/Mawjood/packages/cms/v1",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//packages/proto/v1:v1",
+        "//packages/cms/store",
+        "@org_golang_google_grpc//codes",
+        "@org_golang_google_grpc//status",
+    ],
+)
+
+# go_test(
+#     name = "analytics_test",
+#     srcs = ["service_test.go"],
+#     embed = [":analytics"],
+#     deps = [
+#         "//packages/proto/analytics/v1/genproto",
+#         "//packages/transaction/mock",
+#         "@com_github_stretchr_testify//assert",
+#     ],
+# )

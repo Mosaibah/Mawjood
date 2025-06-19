@@ -1,24 +1,34 @@
+load("@rules_go//go:def.bzl", "go_library")
+load("@rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
-# Proto library for all messages
+# Combined proto library with all proto files
 proto_library(
-    name = "messages_proto",
-    srcs = ["messages.proto"],
+    name = "mawjood_proto",
+    srcs = [
+        "messages.proto",
+        "cms.proto", 
+        "discovery.proto",
+    ],
+    deps = ["@protobuf//:empty_proto"],
+    strip_import_prefix = "/packages/proto/v1",
     visibility = ["//visibility:public"],
 )
 
-# Proto library for CMS service
-proto_library(
-    name = "cms_proto",
-    srcs = ["cms.proto"],
+# Go proto library with gRPC support
+go_proto_library(
+    name = "mawjood_go_proto",
+    compilers = ["@rules_go//proto:go_grpc"],
+    proto = ":mawjood_proto",
+    importpath = "mawjood/gen/go/packages/proto/v1",
     visibility = ["//visibility:public"],
-    deps = [":messages_proto"],
 )
 
-# Proto library for Discovery service
-proto_library(
-    name = "discovery_proto",
-    srcs = ["discovery.proto"],
+# Go library that exports the generated code
+go_library(
+    name = "v1",
+    embed = [":mawjood_go_proto"],
+    importpath = "mawjood/gen/go/packages/proto/v1",
     visibility = ["//visibility:public"],
-    deps = [":messages_proto"],
 )
+

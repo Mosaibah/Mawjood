@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS contents (
     duration_seconds INT,
     published_at TIMESTAMPTZ,
     content_type VARCHAR(20) NOT NULL, -- 'podcast' or 'documentary'
+    url VARCHAR(255),
+    platform_name VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -80,27 +82,24 @@ INSERT INTO tags (name) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert seed data for contents (podcasts and documentaries)
-INSERT INTO contents (title, description, language, duration_seconds, published_at, content_type) VALUES 
+INSERT INTO contents (title, description, language, duration_seconds, published_at, content_type, url, platform_name) VALUES 
     -- Podcasts
-    ('The Daily Tech Brief', 'Your daily dose of technology news and insights from around the world. Covering AI, startups, and the latest innovations.', 'English', 1800, '2024-01-15 08:00:00+00', 'podcast'),
-    ('Science Friday', 'Weekly discussions about science, technology, and other cool stuff. Hosted by Ira Flatow.', 'English', 3600, '2024-01-12 14:00:00+00', 'podcast'),
-    ('Hidden Brain', 'Shankar Vedantam uses science and storytelling to reveal the unconscious patterns that drive human behavior.', 'English', 2700, '2024-01-10 09:00:00+00', 'podcast'),
-    ('Planet Money', 'The economy explained. Imagine you could call up a friend and say, "Meet me at the bar and tell me what''s going on with the economy."', 'English', 2400, '2024-01-08 12:00:00+00', 'podcast'),
-    ('Serial', 'Investigative journalism that tells one story—a true story—over the course of an entire season.', 'English', 3300, '2024-01-05 15:00:00+00', 'podcast'),
-    
+    ('The Daily Tech Brief', 'Your daily dose of technology news and insights from around the world. Covering AI, startups, and the latest innovations.', 'English', 1800, '2024-01-15 08:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Science Friday', 'Weekly discussions about science, technology, and other cool stuff. Hosted by Ira Flatow.', 'English', 3600, '2024-01-12 14:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Hidden Brain', 'Shankar Vedantam uses science and storytelling to reveal the unconscious patterns that drive human behavior.', 'English', 2700, '2024-01-10 09:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+
     -- Documentaries
-    ('The Blue Planet', 'A comprehensive exploration of the world''s oceans, revealing the extraordinary creatures that inhabit them.', 'English', 3600, '2024-01-20 20:00:00+00', 'documentary'),
-    ('Cosmos: A Spacetime Odyssey', 'Hosted by Neil deGrasse Tyson, this series explores how we discovered the laws of nature and found our coordinates in space and time.', 'English', 5400, '2024-01-18 19:00:00+00', 'documentary'),
-    ('The Civil War', 'Ken Burns'' epic documentary about the American Civil War, featuring archival photographs and first-person accounts.', 'English', 7200, '2024-01-16 21:00:00+00', 'documentary'),
-    ('Planet Earth II', 'Experience the world from the viewpoint of animals themselves, using cutting-edge technology.', 'English', 3600, '2024-01-14 18:00:00+00', 'documentary'),
-    ('The Last Dance', 'A 10-part documentary series about Michael Jordan and the Chicago Bulls dynasty of the 1990s.', 'English', 4800, '2024-01-12 22:00:00+00', 'documentary'),
+    ('The Blue Planet', 'A comprehensive exploration of the world''s oceans, revealing the extraordinary creatures that inhabit them.', 'English', 3600, '2024-01-20 20:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Cosmos: A Spacetime Odyssey', 'Hosted by Neil deGrasse Tyson, this series explores how we discovered the laws of nature and found our coordinates in space and time.', 'English', 5400, '2024-01-18 19:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('The Civil War', 'Ken Burns'' epic documentary about the American Civil War, featuring archival photographs and first-person accounts.', 'English', 7200, '2024-01-16 21:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Planet Earth II', 'Experience the world from the viewpoint of animals themselves, using cutting-edge technology.', 'English', 3600, '2024-01-14 18:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('The Last Dance', 'A 10-part documentary series about Michael Jordan and the Chicago Bulls dynasty of the 1990s.', 'English', 4800, '2024-01-12 22:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
     
     -- More diverse content
-    ('Arabic Tech Talk', 'تحدث عن التكنولوجيا باللغة العربية - مناقشات حول الذكاء الاصطناعي والابتكار', 'Arabic', 2400, '2024-01-22 10:00:00+00', 'podcast'),
-    ('Historia de México', 'Un podcast que explora la rica historia de México, desde los aztecas hasta la época moderna.', 'Spanish', 3000, '2024-01-20 16:00:00+00', 'podcast'),
-    ('Le Monde en Français', 'L''actualité internationale analysée et expliquée en français.', 'French', 2100, '2024-01-19 11:00:00+00', 'podcast'),
-    ('Die Deutsche Welle', 'Nachrichten und Hintergrundberichte aus Deutschland und der Welt.', 'German', 1800, '2024-01-17 13:00:00+00', 'podcast'),
-    ('日本の歴史', '日本の豊かな歴史を探るドキュメンタリーシリーズ', 'Japanese', 4200, '2024-01-15 20:00:00+00', 'documentary')
+    ('Arabic Tech Talk', 'تحدث عن التكنولوجيا باللغة العربية - مناقشات حول الذكاء الاصطناعي والابتكار', 'Arabic', 2400, '2024-01-22 10:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Historia de México', 'Un podcast que explora la rica historia de México, desde los aztecas hasta la época moderna.', 'Spanish', 3000, '2024-01-20 16:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Le Monde en Français', 'L''actualité internationale analysée et expliquée en français.', 'French', 2100, '2024-01-19 11:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('Die Deutsche Welle', 'Nachrichten und Hintergrundberichte aus Deutschland und der Welt.', 'German', 1800, '2024-01-17 13:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube')
 ON CONFLICT DO NOTHING;
 
 -- Associate content with tags

@@ -1,3 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Folder Structure Explanation
 
 This document explains how our project's folders are organized. This structure is designed to keep our code clean, easy to understand, and scalable, based on the services defined in `system-design.md`.
@@ -210,7 +215,7 @@ CREATE TABLE contents (
     content_type VARCHAR(20) NOT NULL,
     platform_id UUID REFERENCES platforms(id),
     external_id VARCHAR(255), -- ID from the external platform (e.g., YouTube video ID)
-    external_url VARCHAR(500), -- Direct URL to the content on the platform
+    url VARCHAR(500), -- Direct URL to the content on the platform
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
