@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -16,10 +15,7 @@ type ContentData struct {
 }
 
 type Interface interface {
-	CreateContent(ctx context.Context, content Content) (*Content, error)
 	GetContent(ctx context.Context, id string) (*Content, error)
-	UpdateContent(ctx context.Context, content Content) (*Content, error)
-	DeleteContent(ctx context.Context, id string) error
 	ListContents(ctx context.Context, pageSize int32, pageToken string) ([]Content, string, error)
 	SearchContents(ctx context.Context, query string, pageSize int32, pageToken string) ([]Content, string, error)
 }
@@ -29,98 +25,24 @@ func New(db *sql.DB) Interface {
 }
 
 type Content struct {
-	ID             string
-	Title          string
-	Description    string
-	Tags           []string
-	Language       string
+	ID              string
+	Title           string
+	Description     string
+	Tags            []string
+	Language        string
 	DurationSeconds int32
-	PublishedAt    time.Time
-	ContentType    string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	ExternalURL    string
-	PlatformName   string
-	DeletedAt      *time.Time
-}
-
-func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Content, error) {
-	// Start a transaction to handle content and tags insertion
-	tx, err := cd.db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback()
-
-	// Insert the content
-	insertContentQuery := `
-		INSERT INTO contents (title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id, created_at, updated_at`
-
-	now := time.Now()
-	content.CreatedAt = now
-	content.UpdatedAt = now
-
-	err = tx.QueryRowContext(ctx, insertContentQuery,
-		content.Title,
-		content.Description,
-		content.Language,
-		content.DurationSeconds,
-		content.PublishedAt,
-		content.ContentType,
-		content.CreatedAt,
-		content.UpdatedAt,
-		content.ExternalURL,
-		content.PlatformName,
-	).Scan(&content.ID, &content.CreatedAt, &content.UpdatedAt)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to insert content: %w", err)
-	}
-
-	// Handle tags insertion
-	if len(content.Tags) > 0 {
-		for _, tagName := range content.Tags {
-			// Insert tag if it doesn't exist, or get existing tag ID
-			var tagID string
-			upsertTagQuery := `
-				INSERT INTO tags (id, name) 
-				VALUES (gen_random_uuid(), $1)
-				ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-				RETURNING id`
-			
-			err = tx.QueryRowContext(ctx, upsertTagQuery, tagName).Scan(&tagID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to upsert tag %s: %w", tagName, err)
-			}
-
-			// Link content to tag
-			insertContentTagQuery := `
-				INSERT INTO content_tags (content_id, tag_id)
-				VALUES ($1, $2)
-				ON CONFLICT (content_id, tag_id) DO NOTHING`
-			
-			_, err = tx.ExecContext(ctx, insertContentTagQuery, content.ID, tagID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to link content to tag %s: %w", tagName, err)
-			}
-		}
-	}
-
-	// Commit the transaction
-	if err = tx.Commit(); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	log.Printf("Successfully created content with ID: %s", content.ID)
-	return &content, nil
+	PublishedAt     time.Time
+	ContentType     string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	ExternalURL     string
+	PlatformName    string
 }
 
 func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, error) {
 	// Get the content details (only non-deleted content)
 	getContentQuery := `
-		SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
+		SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 		FROM contents 
 		WHERE id = $1 AND deleted_at IS NULL`
 
@@ -128,7 +50,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 	var publishedAt, createdAt, updatedAt time.Time
 	var description, language, url, platformName sql.NullString
 	var durationSeconds sql.NullInt32
-	var deletedAt sql.NullTime
 
 	err := cd.db.QueryRowContext(ctx, getContentQuery, id).Scan(
 		&content.ID,
@@ -142,7 +63,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 		&updatedAt,
 		&url,
 		&platformName,
-		&deletedAt,
 	)
 
 	if err != nil {
@@ -161,9 +81,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 	content.PublishedAt = publishedAt
 	content.CreatedAt = createdAt
 	content.UpdatedAt = updatedAt
-	if deletedAt.Valid {
-		content.DeletedAt = &deletedAt.Time
-	}
 
 	// Get associated tags
 	tags, err := cd.getContentTags(ctx, id)
@@ -175,121 +92,12 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 	return &content, nil
 }
 
-func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Content, error) {
-	// Start a transaction to handle content and tags update
-	tx, err := cd.db.BeginTx(ctx, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
-	defer tx.Rollback()
-
-	// Update the content (only if not soft deleted)
-	updateContentQuery := `
-		UPDATE contents 
-		SET title = $1, description = $2, language = $3, duration_seconds = $4, published_at = $5, content_type = $6, updated_at = $7, url = $8, platform_name = $9
-		WHERE id = $10 AND deleted_at IS NULL
-		RETURNING created_at, updated_at`
-
-	now := time.Now()
-	content.UpdatedAt = now
-
-	err = tx.QueryRowContext(ctx, updateContentQuery,
-		content.Title,
-		content.Description,
-		content.Language,
-		content.DurationSeconds,
-		content.PublishedAt,
-		content.ContentType,
-		content.UpdatedAt,
-		content.ExternalURL,
-		content.PlatformName,
-		content.ID,
-	).Scan(&content.CreatedAt, &content.UpdatedAt)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("content with ID %s not found", content.ID)
-		}
-		return nil, fmt.Errorf("failed to update content: %w", err)
-	}
-
-	// Remove existing tag associations
-	deleteTagsQuery := `DELETE FROM content_tags WHERE content_id = $1`
-	_, err = tx.ExecContext(ctx, deleteTagsQuery, content.ID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to remove existing tags: %w", err)
-	}
-
-	// Handle new tags insertion
-	if len(content.Tags) > 0 {
-		for _, tagName := range content.Tags {
-			// Insert tag if it doesn't exist, or get existing tag ID
-			var tagID string
-			upsertTagQuery := `
-				INSERT INTO tags (id, name) 
-				VALUES (gen_random_uuid(), $1)
-				ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
-				RETURNING id`
-			
-			err = tx.QueryRowContext(ctx, upsertTagQuery, tagName).Scan(&tagID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to upsert tag %s: %w", tagName, err)
-			}
-
-			// Link content to tag
-			insertContentTagQuery := `
-				INSERT INTO content_tags (content_id, tag_id)
-				VALUES ($1, $2)
-				ON CONFLICT (content_id, tag_id) DO NOTHING`
-			
-			_, err = tx.ExecContext(ctx, insertContentTagQuery, content.ID, tagID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to link content to tag %s: %w", tagName, err)
-			}
-		}
-	}
-
-	// Commit the transaction
-	if err = tx.Commit(); err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	log.Printf("Successfully updated content with ID: %s", content.ID)
-	return &content, nil
-}
-
-func (cd *ContentData) DeleteContent(ctx context.Context, id string) error {
-	// Soft delete: set deleted_at timestamp instead of actually deleting the record
-	now := time.Now()
-	softDeleteQuery := `
-		UPDATE contents 
-		SET deleted_at = $1, updated_at = $1
-		WHERE id = $2 AND deleted_at IS NULL`
-	
-	result, err := cd.db.ExecContext(ctx, softDeleteQuery, now, id)
-	if err != nil {
-		return fmt.Errorf("failed to soft delete content: %w", err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
-	}
-
-	if rowsAffected == 0 {
-		return fmt.Errorf("content with ID %s not found or already deleted", id)
-	}
-
-	log.Printf("Successfully soft deleted content with ID: %s", id)
-	return nil
-}
-
 func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageToken string) ([]Content, string, error) {
 	// Default page size if not specified
 	if pageSize <= 0 {
 		pageSize = 10
 	}
-	
+
 	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
@@ -298,11 +106,11 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 	// Build the query with pagination
 	var query string
 	var args []interface{}
-	
+
 	if pageToken == "" {
 		// First page (only non-deleted content)
 		query = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
+			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
 			WHERE deleted_at IS NULL
 			ORDER BY created_at DESC 
@@ -311,7 +119,7 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 	} else {
 		// Subsequent pages - use cursor-based pagination (only non-deleted content)
 		query = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
+			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
 			WHERE deleted_at IS NULL AND created_at < (SELECT created_at FROM contents WHERE id = $1)
 			ORDER BY created_at DESC 
@@ -331,7 +139,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 		var publishedAt, createdAt, updatedAt time.Time
 		var description, language, url, platformName sql.NullString
 		var durationSeconds sql.NullInt32
-		var deletedAt sql.NullTime
 
 		err := rows.Scan(
 			&content.ID,
@@ -345,7 +152,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 			&updatedAt,
 			&url,
 			&platformName,
-			&deletedAt,
 		)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
@@ -360,9 +166,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 		content.PublishedAt = publishedAt
 		content.CreatedAt = createdAt
 		content.UpdatedAt = updatedAt
-		if deletedAt.Valid {
-			content.DeletedAt = &deletedAt.Time
-		}
 
 		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)
@@ -394,7 +197,7 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 	if pageSize <= 0 {
 		pageSize = 10
 	}
-	
+
 	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
@@ -409,11 +212,11 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 	// Build the search query with pagination
 	var sqlQuery string
 	var args []interface{}
-	
+
 	if pageToken == "" {
 		// First page - search in title and description using trigram similarity (only non-deleted content)
 		sqlQuery = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
+			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
 			WHERE deleted_at IS NULL AND (title ILIKE $1 OR description ILIKE $1)
 			ORDER BY 
@@ -429,7 +232,7 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 	} else {
 		// Subsequent pages with cursor-based pagination (only non-deleted content)
 		sqlQuery = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
+			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
 			WHERE deleted_at IS NULL AND (title ILIKE $1 OR description ILIKE $1) 
 			AND created_at < (SELECT created_at FROM contents WHERE id = $2)
@@ -457,7 +260,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		var publishedAt, createdAt, updatedAt time.Time
 		var description, language, url, platformName sql.NullString
 		var durationSeconds sql.NullInt32
-		var deletedAt sql.NullTime
 
 		err := rows.Scan(
 			&content.ID,
@@ -471,7 +273,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 			&updatedAt,
 			&url,
 			&platformName,
-			&deletedAt,
 		)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
@@ -486,9 +287,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		content.PublishedAt = publishedAt
 		content.CreatedAt = createdAt
 		content.UpdatedAt = updatedAt
-		if deletedAt.Valid {
-			content.DeletedAt = &deletedAt.Time
-		}
 
 		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)

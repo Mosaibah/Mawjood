@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS contents (
     url VARCHAR(255),
     platform_name VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at TIMESTAMPTZ NULL -- For soft delete functionality
 );
 
 -- Create the tags table to store unique tags
@@ -56,6 +57,12 @@ CREATE INDEX IF NOT EXISTS idx_contents_published_at ON contents (published_at D
 
 -- Index for created date sorting
 CREATE INDEX IF NOT EXISTS idx_contents_created_at ON contents (created_at DESC);
+
+-- Index for soft delete functionality
+CREATE INDEX IF NOT EXISTS idx_contents_deleted_at ON contents (deleted_at);
+
+-- Partial index for active (non-deleted) content for better performance
+CREATE INDEX IF NOT EXISTS idx_contents_active ON contents (created_at DESC) WHERE deleted_at IS NULL;
 
 -- Insert seed data for tags
 INSERT INTO tags (name) VALUES 

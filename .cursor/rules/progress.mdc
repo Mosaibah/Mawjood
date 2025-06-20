@@ -31,39 +31,49 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [X] Run the seed script.
 
 ## Phase 3: CMS Service Implementation
-- [ ] **Status:** `Not Started`
+- [x] **Status:** `Completed`
 - **Goal:** Build the service responsible for content management.
 
-- [ ] Create the basic directory structure for the `packages/cms` service.
-- [ ] Implement the `store` package for database CRUD operations on content.
-- [ ] Implement the `CreateContent` gRPC endpoint.
-- [ ] Implement the `UpdateContent` gRPC endpoint.
-- [ ] Implement the `DeleteContent` gRPC endpoint.
-- [ ] Implement the `ListContents` gRPC endpoint for the admin view.
-- [ ] Set up the main gRPC server for the CMS service.
-- [ ] Create a `Dockerfile` to containerize the CMS service.
-- [ ] Write unit tests for the `store` package.
-- [ ] Write integration tests for the gRPC endpoints.
-- [ ] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
-- [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
+- [x] Create the basic directory structure for the `packages/cms` service.
+- [x] Implement the `store` package for database CRUD operations on content.
+- [x] Implement the `CreateContent` gRPC endpoint.
+- [x] Implement the `UpdateContent` gRPC endpoint.
+- [x] Implement the `DeleteContent` gRPC endpoint.
+- [x] Implement the `ListContents` gRPC endpoint for the admin view.
+- [x] Set up the main gRPC server for the CMS service.
 
 ## Phase 4: Discovery Service Implementation
-- [ ] **Status:** `Not Started`
+- [x] **Status:** `Completed`
 - **Goal:** Build the user-facing service for searching and discovering content.
 
-- [ ] Create the basic directory structure for the `packages/discovery` service.
-- [ ] Implement the `store` package for read-only database access.
-- [ ] Implement the `GetContent` gRPC endpoint.
-- [ ] Implement the `ListContents` gRPC endpoint with pagination.
-- [ ] Implement the `SearchContents` gRPC endpoint using full-text search capabilities.
-- [ ] Set up the main gRPC server for the Discovery service.
-- [ ] Create a `Dockerfile` to containerize the Discovery service.
-- [ ] Write unit tests for the `store` package.
-- [ ] Write integration tests for the gRPC endpoints.
+- [x] Create the basic directory structure for the `packages/discovery` service.
+- [x] Implement the `store` package for read-only database access.
+- [x] Implement the `GetContent` gRPC endpoint.
+- [x] Implement the `ListContents` gRPC endpoint with pagination.
+- [x] Implement the `SearchContents` gRPC endpoint using full-text search capabilities.
+- [x] Set up the main gRPC server for the Discovery service.
 
-## Phase 5: Providers Service (Future)
+## Phase 5: Random Tasks
+- [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
+- [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
+- [] Improve search
+
+## Phase 6: Providers Service (Future)
 - [ ] **Status:** `Not Started`
 - **Goal:** Design and implement the service for integrating with external content providers. This will be tackled after the core services are complete.
 
 - [ ] Define the `ProvidersService` in `packages/proto/mawjood/v1/providers.proto`.
 - [ ] Plan and implement the service logic.
+
+## Phase: Testing:
+- [ ] Write unit tests for the cms `store` package.
+- [ ] Write unit tests for the discovery `store` package.
+- [ ] Write integration tests for discovery the gRPC endpoints.
+
+## Phase 7: Documentation
+
+
+## Optional
+- [ ] Create a `Dockerfile` to containerize the Discovery service.
+- [ ] Create a `Dockerfile` cms to containerize the CMS service.
+

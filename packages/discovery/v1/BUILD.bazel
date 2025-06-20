@@ -1,26 +1,25 @@
 load("@rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "cms",
+    name = "discovery",
     srcs = ["service.go"],
-    importpath = "github.com/mosaibah/Mawjood/packages/cms/v1",
+    importpath = "github.com/mosaibah/Mawjood/packages/discovery/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//packages/proto/v1:v1",
-        "//packages/cms/store",
+        "//packages/discovery/store",
         "@org_golang_google_grpc//codes",
         "@org_golang_google_grpc//status",
-        "@org_golang_google_protobuf//types/known/emptypb",
     ],
 )
 
 # go_test(
-#     name = "analytics_test",
+#     name = "discovery_test",
 #     srcs = ["service_test.go"],
-#     embed = [":analytics"],
+#     embed = [":discovery"],
 #     deps = [
-#         "//packages/proto/analytics/v1/genproto",
-#         "//packages/transaction/mock",
+#         "//packages/proto/v1:v1",
+#         "//packages/discovery/mock",
 #         "@com_github_stretchr_testify//assert",
 #     ],
-# )
+# ) 
