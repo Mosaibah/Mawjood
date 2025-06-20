@@ -2,6 +2,9 @@ CREATE DATABASE IF NOT EXISTS "mawjood";
 
 SET DATABASE  = "mawjood";
 
+-- Enable pg_trgm extension for trigram similarity search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Create the contents table to store core content metadata
 CREATE TABLE IF NOT EXISTS contents (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

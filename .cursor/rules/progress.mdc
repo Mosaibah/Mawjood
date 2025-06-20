@@ -57,6 +57,7 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
 - [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
 - [] Improve search
+- [] logging
 
 ## Phase 6: Providers Service (Future)
 - [ ] **Status:** `Not Started`
@@ -71,7 +72,9 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [ ] Write integration tests for discovery the gRPC endpoints.
 
 ## Phase 7: Documentation
-
+- folder structure
+- modules bounderies
+- trigram matching
 
 ## Optional
 - [ ] Create a `Dockerfile` to containerize the Discovery service.

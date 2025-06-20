@@ -209,43 +209,93 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		return []Content{}, "", nil
 	}
 
-	// Build the search query with pagination
+	// Set similarity threshold for trigram matching
+	_, err := cd.db.ExecContext(ctx, "SET SESSION pg_trgm.similarity_threshold = 0.10")
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to set similarity threshold: %w", err)
+	}
+
+	// Build the search query with similarity ranking and pagination
 	var sqlQuery string
 	var args []interface{}
 
 	if pageToken == "" {
-		// First page - search in title and description using trigram similarity (only non-deleted content)
+		// First page - search using trigram similarity with ranking including tags
 		sqlQuery = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
-			FROM contents 
-			WHERE deleted_at IS NULL AND (title ILIKE $1 OR description ILIKE $1)
-			ORDER BY 
-				CASE 
-					WHEN title ILIKE $1 THEN 1
-					WHEN description ILIKE $1 THEN 2
-					ELSE 3
-				END,
-				created_at DESC 
-			LIMIT $2`
-		likeQuery := "%" + searchQuery + "%"
-		args = []interface{}{likeQuery, pageSize + 1}
-	} else {
-		// Subsequent pages with cursor-based pagination (only non-deleted content)
-		sqlQuery = `
-			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
-			FROM contents 
-			WHERE deleted_at IS NULL AND (title ILIKE $1 OR description ILIKE $1) 
-			AND created_at < (SELECT created_at FROM contents WHERE id = $2)
-			ORDER BY 
-				CASE 
-					WHEN title ILIKE $1 THEN 1
-					WHEN description ILIKE $1 THEN 2
-					ELSE 3
-				END,
-				created_at DESC 
+			WITH content_with_tags AS (
+				SELECT 
+					c.id, c.title, c.description, c.language, c.duration_seconds, c.published_at, 
+					c.content_type, c.created_at, c.updated_at, c.url, c.platform_name,
+					STRING_AGG(t.name, ' ') as tag_text
+				FROM contents c
+				LEFT JOIN content_tags ct ON c.id = ct.content_id
+				LEFT JOIN tags t ON ct.tag_id = t.id
+				WHERE c.deleted_at IS NULL
+				GROUP BY c.id, c.title, c.description, c.language, c.duration_seconds, c.published_at, 
+					c.content_type, c.created_at, c.updated_at, c.url, c.platform_name
+			)
+			SELECT 
+				id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name,
+				GREATEST(
+					SIMILARITY(LOWER(title), LOWER($1)),
+					SIMILARITY(LOWER(description), LOWER($1)),
+					SIMILARITY(LOWER(platform_name), LOWER($1)),
+					COALESCE(SIMILARITY(LOWER(tag_text), LOWER($1)), 0)
+				) as max_similarity
+			FROM content_with_tags
+			WHERE (
+				LOWER(title) % LOWER($1) OR 
+				LOWER(description) % LOWER($1) OR 
+				LOWER(platform_name) % LOWER($1) OR
+				LOWER(tag_text) % LOWER($1) OR
+				title ILIKE $2 OR 
+				description ILIKE $2 OR
+				platform_name ILIKE $2 OR
+				tag_text ILIKE $2
+			)
+			ORDER BY max_similarity DESC, created_at DESC 
 			LIMIT $3`
 		likeQuery := "%" + searchQuery + "%"
-		args = []interface{}{likeQuery, pageToken, pageSize + 1}
+		args = []interface{}{searchQuery, likeQuery, pageSize + 1}
+	} else {
+		// Subsequent pages with cursor-based pagination
+		sqlQuery = `
+			WITH content_with_tags AS (
+				SELECT 
+					c.id, c.title, c.description, c.language, c.duration_seconds, c.published_at, 
+					c.content_type, c.created_at, c.updated_at, c.url, c.platform_name,
+					STRING_AGG(t.name, ' ') as tag_text
+				FROM contents c
+				LEFT JOIN content_tags ct ON c.id = ct.content_id
+				LEFT JOIN tags t ON ct.tag_id = t.id
+				WHERE c.deleted_at IS NULL
+				GROUP BY c.id, c.title, c.description, c.language, c.duration_seconds, c.published_at, 
+					c.content_type, c.created_at, c.updated_at, c.url, c.platform_name
+			)
+			SELECT 
+				id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name,
+				GREATEST(
+					SIMILARITY(LOWER(title), LOWER($1)),
+					SIMILARITY(LOWER(description), LOWER($1)),
+					SIMILARITY(LOWER(platform_name), LOWER($1)),
+					COALESCE(SIMILARITY(LOWER(tag_text), LOWER($1)), 0)
+				) as max_similarity
+			FROM content_with_tags
+			WHERE (
+				LOWER(title) % LOWER($1) OR 
+				LOWER(description) % LOWER($1) OR 
+				LOWER(platform_name) % LOWER($1) OR
+				LOWER(tag_text) % LOWER($1) OR
+				title ILIKE $2 OR 
+				description ILIKE $2 OR
+				platform_name ILIKE $2 OR
+				tag_text ILIKE $2
+			)
+			AND created_at < (SELECT created_at FROM content_with_tags WHERE id = $3)
+			ORDER BY max_similarity DESC, created_at DESC 
+			LIMIT $4`
+		likeQuery := "%" + searchQuery + "%"
+		args = []interface{}{searchQuery, likeQuery, pageToken, pageSize + 1}
 	}
 
 	rows, err := cd.db.QueryContext(ctx, sqlQuery, args...)
@@ -260,6 +310,7 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		var publishedAt, createdAt, updatedAt time.Time
 		var description, language, url, platformName sql.NullString
 		var durationSeconds sql.NullInt32
+		var maxSimilarity float64
 
 		err := rows.Scan(
 			&content.ID,
@@ -273,6 +324,7 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 			&updatedAt,
 			&url,
 			&platformName,
+			&maxSimilarity,
 		)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
