@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -113,7 +112,6 @@ func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Con
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	log.Printf("Successfully created content with ID: %s", content.ID)
 	return &content, nil
 }
 
@@ -254,7 +252,6 @@ func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Con
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	log.Printf("Successfully updated content with ID: %s", content.ID)
 	return &content, nil
 }
 
@@ -280,7 +277,6 @@ func (cd *ContentData) DeleteContent(ctx context.Context, id string) error {
 		return fmt.Errorf("content with ID %s not found or already deleted", id)
 	}
 
-	log.Printf("Successfully soft deleted content with ID: %s", id)
 	return nil
 }
 

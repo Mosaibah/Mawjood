@@ -38,6 +38,12 @@ tasks:
       - '{{.BAZEL}} build //{{.DISCOVERY_DIR}}/...'
     deps: [proto:build]
 
+  discovery:run:
+    desc: Run Discovery service
+    cmds:
+      - '{{.BAZEL}} run //{{.DISCOVERY_DIR}}/server:server'
+    deps: [discovery:build]
+
   build:all:
     desc: Build entire project
     cmds:
@@ -74,9 +80,11 @@ tasks:
       - task status
       - echo ""
       - echo "Available commands:"
-      - echo "  task proto:build    - Build proto files and generate Go code"
-      - echo "  task cms:build      - Build CMS service"
-      - echo "  task cms:run        - Run CMS service"
-      - echo "  task build:all      - Build entire project"
-      - echo "  task test:all       - Run all tests"
-      - echo "  task dev:setup      - Setup development environment" 
+      - echo "  task proto:build      - Build proto files and generate Go code"
+      - echo "  task cms:build        - Build CMS service"
+      - echo "  task cms:run          - Run CMS service"
+      - echo "  task discovery:build  - Build Discovery service"
+      - echo "  task discovery:run    - Run Discovery service"
+      - echo "  task build:all        - Build entire project"
+      - echo "  task test:all         - Run all tests"
+      - echo "  task dev:setup        - Setup development environment" 

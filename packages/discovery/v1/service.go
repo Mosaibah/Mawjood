@@ -2,9 +2,11 @@ package v1
 
 import (
 	"context"
+	"log"
 	"time"
 
 	mawjoodv1 "mawjood/gen/go/packages/proto/v1"
+
 	"github.com/mosaibah/Mawjood/packages/discovery/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,6 +22,8 @@ func New(store store.Interface) *DiscoveryService {
 }
 
 func (ds *DiscoveryService) GetContent(ctx context.Context, req *mawjoodv1.GetContentRequest) (*mawjoodv1.Content, error) {
+	log.Printf("GetContent started - ID: %s", req.Id)
+
 	// Validate required fields
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
@@ -31,11 +35,15 @@ func (ds *DiscoveryService) GetContent(ctx context.Context, req *mawjoodv1.GetCo
 		return nil, status.Errorf(codes.NotFound, "failed to get content: %v", err)
 	}
 
+	log.Printf("GetContent completed successfully - ID: %s", content.ID)
+
 	// Convert store content to proto response
 	return ds.storeContentToProto(content), nil
 }
 
 func (ds *DiscoveryService) ListContents(ctx context.Context, req *mawjoodv1.ListContentsRequest) (*mawjoodv1.ListContentsResponse, error) {
+	log.Printf("ListContents started")
+
 	// Call store to list contents
 	contents, nextPageToken, err := ds.store.ListContents(ctx, req.PageSize, req.PageToken)
 	if err != nil {
@@ -48,6 +56,8 @@ func (ds *DiscoveryService) ListContents(ctx context.Context, req *mawjoodv1.Lis
 		protoContents[i] = ds.storeContentToProto(&content)
 	}
 
+	log.Printf("ListContents completed successfully - count: %d", len(contents))
+
 	return &mawjoodv1.ListContentsResponse{
 		Contents:      protoContents,
 		NextPageToken: nextPageToken,
@@ -55,6 +65,8 @@ func (ds *DiscoveryService) ListContents(ctx context.Context, req *mawjoodv1.Lis
 }
 
 func (ds *DiscoveryService) SearchContents(ctx context.Context, req *mawjoodv1.SearchContentsRequest) (*mawjoodv1.SearchContentsResponse, error) {
+	log.Printf("SearchContents started - query: %s", req.Query)
+
 	// Validate required fields
 	if req.Query == "" {
 		return nil, status.Error(codes.InvalidArgument, "query is required")
@@ -71,6 +83,8 @@ func (ds *DiscoveryService) SearchContents(ctx context.Context, req *mawjoodv1.S
 	for i, content := range contents {
 		protoContents[i] = ds.storeContentToProto(&content)
 	}
+
+	log.Printf("SearchContents completed successfully - count: %d", len(contents))
 
 	return &mawjoodv1.SearchContentsResponse{
 		Contents:      protoContents,
@@ -98,17 +112,17 @@ func (ds *DiscoveryService) storeContentToProto(content *store.Content) *mawjood
 	}
 
 	return &mawjoodv1.Content{
-		Id:             content.ID,
-		Title:          content.Title,
-		Description:    content.Description,
-		Tags:           content.Tags,
-		Language:       content.Language,
+		Id:              content.ID,
+		Title:           content.Title,
+		Description:     content.Description,
+		Tags:            content.Tags,
+		Language:        content.Language,
 		DurationSeconds: content.DurationSeconds,
-		PublishedAt:    publishedAt,
-		ContentType:    ds.stringToProtoContentType(content.ContentType),
-		CreatedAt:      content.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:      content.UpdatedAt.Format(time.RFC3339),
-		Url:           content.ExternalURL,
-		PlatformName:   content.PlatformName,
+		PublishedAt:     publishedAt,
+		ContentType:     ds.stringToProtoContentType(content.ContentType),
+		CreatedAt:       content.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       content.UpdatedAt.Format(time.RFC3339),
+		Url:             content.ExternalURL,
+		PlatformName:    content.PlatformName,
 	}
-} 
+}

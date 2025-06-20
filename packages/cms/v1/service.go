@@ -2,10 +2,13 @@ package v1
 
 import (
 	"context"
+	"log"
+
 	// "fmt"
 	"time"
 
 	mawjoodv1 "mawjood/gen/go/packages/proto/v1"
+
 	"github.com/mosaibah/Mawjood/packages/cms/store"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,6 +25,8 @@ func New(store store.Interface) *CMSService {
 }
 
 func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateContentRequest) (*mawjoodv1.Content, error) {
+	log.Printf("CreateContent started")
+
 	// Validate required fields
 	if req.Title == "" {
 		return nil, status.Error(codes.InvalidArgument, "title is required")
@@ -45,15 +50,15 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 
 	// Create content struct for store
 	content := store.Content{
-		Title:          req.Title,
-		Description:    req.Description,
-		Tags:           req.Tags,
-		Language:       req.Language,
+		Title:           req.Title,
+		Description:     req.Description,
+		Tags:            req.Tags,
+		Language:        req.Language,
 		DurationSeconds: req.DurationSeconds,
-		PublishedAt:    publishedAt,
-		ContentType:    contentType,
-		ExternalURL:    req.Url,
-		PlatformName:   req.PlatformName,
+		PublishedAt:     publishedAt,
+		ContentType:     contentType,
+		ExternalURL:     req.Url,
+		PlatformName:    req.PlatformName,
 	}
 
 	// Call store to create content
@@ -62,11 +67,15 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 		return nil, status.Errorf(codes.Internal, "failed to create content: %v", err)
 	}
 
+	log.Printf("CreateContent completed successfully - ID: %s", createdContent.ID)
+
 	// Convert back to proto response
 	return cs.storeContentToProto(createdContent), nil
 }
 
 func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateContentRequest) (*mawjoodv1.Content, error) {
+	log.Printf("UpdateContent started - ID: %s", req.Id)
+
 	// Validate required fields
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
@@ -93,16 +102,16 @@ func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateCo
 
 	// Create content struct for store
 	content := store.Content{
-		ID:             req.Id,
-		Title:          req.Title,
-		Description:    req.Description,
-		Tags:           req.Tags,
-		Language:       req.Language,
+		ID:              req.Id,
+		Title:           req.Title,
+		Description:     req.Description,
+		Tags:            req.Tags,
+		Language:        req.Language,
 		DurationSeconds: req.DurationSeconds,
-		PublishedAt:    publishedAt,
-		ContentType:    contentType,
-		ExternalURL:    req.Url,
-		PlatformName:   req.PlatformName,
+		PublishedAt:     publishedAt,
+		ContentType:     contentType,
+		ExternalURL:     req.Url,
+		PlatformName:    req.PlatformName,
 	}
 
 	// Call store to update content
@@ -111,11 +120,15 @@ func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateCo
 		return nil, status.Errorf(codes.Internal, "failed to update content: %v", err)
 	}
 
+	log.Printf("UpdateContent completed successfully - ID: %s", updatedContent.ID)
+
 	// Convert back to proto response
 	return cs.storeContentToProto(updatedContent), nil
 }
 
 func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteContentRequest) (*emptypb.Empty, error) {
+	log.Printf("DeleteContent started - ID: %s", req.Id)
+
 	// Validate required fields
 	if req.Id == "" {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
@@ -127,10 +140,14 @@ func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteCo
 		return nil, status.Errorf(codes.Internal, "failed to delete content: %v", err)
 	}
 
+	log.Printf("DeleteContent completed successfully - ID: %s", req.Id)
+
 	return &emptypb.Empty{}, nil
 }
 
 func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListContentsRequest) (*mawjoodv1.ListContentsResponse, error) {
+	log.Printf("ListContents started")
+
 	// Call store to list contents
 	contents, nextPageToken, err := cs.store.ListContents(ctx, req.PageSize, req.PageToken)
 	if err != nil {
@@ -143,6 +160,8 @@ func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListConte
 		protoContents[i] = cs.storeContentToProto(&content)
 	}
 
+	log.Printf("ListContents completed successfully - count: %d", len(contents))
+
 	return &mawjoodv1.ListContentsResponse{
 		Contents:      protoContents,
 		NextPageToken: nextPageToken,
@@ -150,6 +169,8 @@ func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListConte
 }
 
 func (cs *CMSService) ImportFromExternal(ctx context.Context, req *mawjoodv1.ImportRequest) (*mawjoodv1.ImportResponse, error) {
+	log.Printf("ImportFromExternal started")
+
 	// This is a stretch goal implementation - for now, return unimplemented
 	return nil, status.Error(codes.Unimplemented, "ImportFromExternal is not yet implemented")
 }
@@ -186,17 +207,17 @@ func (cs *CMSService) storeContentToProto(content *store.Content) *mawjoodv1.Con
 	}
 
 	return &mawjoodv1.Content{
-		Id:             content.ID,
-		Title:          content.Title,
-		Description:    content.Description,
-		Tags:           content.Tags,
-		Language:       content.Language,
+		Id:              content.ID,
+		Title:           content.Title,
+		Description:     content.Description,
+		Tags:            content.Tags,
+		Language:        content.Language,
 		DurationSeconds: content.DurationSeconds,
-		PublishedAt:    publishedAt,
-		ContentType:    cs.stringToProtoContentType(content.ContentType),
-		CreatedAt:      content.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:      content.UpdatedAt.Format(time.RFC3339),
-		Url:           content.ExternalURL,
-		PlatformName:   content.PlatformName,
+		PublishedAt:     publishedAt,
+		ContentType:     cs.stringToProtoContentType(content.ContentType),
+		CreatedAt:       content.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:       content.UpdatedAt.Format(time.RFC3339),
+		Url:             content.ExternalURL,
+		PlatformName:    content.PlatformName,
 	}
 }
