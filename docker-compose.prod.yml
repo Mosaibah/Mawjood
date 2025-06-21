@@ -1,0 +1,100 @@
+services:
+  # CockroachDB Database
+  cockroachdb:
+    image: cockroachdb/cockroach:v25.2.1
+    container_name: mawjood-cockroachdb
+    hostname: cockroachdb
+    ports:
+      - "127.0.0.1:8080:8080"  # Admin UI for system nginx
+    volumes:
+      - cockroach_data:/cockroach/cockroach-data
+      - ./certs:/cockroach/certs
+      - ./db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
+    command: start-single-node --certs-dir=/cockroach/certs --http-addr=0.0.0.0:8080
+    environment:
+      - COCKROACH_DATABASE=mawjood
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+
+  # Database initialization
+  db-init:
+    image: cockroachdb/cockroach:v25.2.1
+    container_name: mawjood-db-init
+    depends_on:
+      - cockroachdb
+    volumes:
+      - ./db_setup.sql:/db_setup.sql
+      - ./certs:/cockroach/certs
+    entrypoint: ["/bin/sh"]
+    command: >
+      -c "
+        sleep 10 &&
+        cockroach sql --certs-dir=/cockroach/certs --host=cockroachdb:26257 < /db_setup.sql
+      "
+    networks:
+      - mawjood-network
+    restart: "no"
+
+  # CMS Service
+  cms-service:
+    image: ${DOCKER_USERNAME}/mawjood-cms:latest  
+    container_name: mawjood-cms
+    ports:
+      - "127.0.0.1:9001:9001"  # Expose gRPC directly to system nginx
+    environment:
+      - DB_HOST=cockroachdb
+      - DB_PORT=26257
+      - DB_NAME=mawjood
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSL_MODE=require
+      - SERVICE_PORT=9001
+    depends_on:
+      - db-init
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # Discovery Service
+  discovery-service:
+    image: ${DOCKER_USERNAME}/mawjood-discovery:latest  
+    container_name: mawjood-discovery
+    ports:
+      - "127.0.0.1:9002:9002"  # Expose gRPC directly to system nginx
+    environment:
+      - DB_HOST=cockroachdb
+      - DB_PORT=26257
+      - DB_NAME=mawjood
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_SSL_MODE=require
+      - SERVICE_PORT=9002
+    depends_on:
+      - db-init
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+volumes:
+  cockroach_data:
+    driver: local
+
+networks:
+  mawjood-network:
+    driver: bridge 

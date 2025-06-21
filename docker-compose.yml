@@ -1,0 +1,134 @@
+services:
+  # CockroachDB Database
+  cockroachdb:
+    image: cockroachdb/cockroach:v25.2.1
+    container_name: mawjood-cockroachdb
+    hostname: cockroachdb
+    ports:
+      - "26257:26257"  # SQL port
+      - "8080:8080"    # Admin UI port
+    volumes:
+      - cockroach_data:/cockroach/cockroach-data
+      - ./db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
+    command: start-single-node --insecure --http-addr=0.0.0.0:8080
+    environment:
+      - COCKROACH_DATABASE=mawjood
+    healthcheck:
+      test: ["CMD", "cockroach", "sql", "--insecure", "--execute", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mawjood-network
+
+  # Database initialization service
+  db-init:
+    image: cockroachdb/cockroach:v25.2.1
+    container_name: mawjood-db-init
+    depends_on:
+      cockroachdb:
+        condition: service_healthy
+    volumes:
+      - ./db_setup.sql:/db_setup.sql
+    entrypoint: ["/bin/sh"]
+    command: >
+      -c "
+        cockroach sql --insecure --host=cockroachdb:26257 < /db_setup.sql
+      "
+    networks:
+      - mawjood-network
+    restart: "no"
+
+  # CMS Service
+  cms-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.cms
+    container_name: mawjood-cms
+    ports:
+      - "9001:9001"
+    environment:
+      - DB_HOST=cockroachdb
+      - DB_PORT=26257
+      - DB_NAME=mawjood
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_SSL_MODE=disable
+      - SERVICE_PORT=9001
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9001"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+
+  # Discovery Service
+  discovery-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.discovery
+    container_name: mawjood-discovery
+    ports:
+      - "9002:9002"
+    environment:
+      - DB_HOST=cockroachdb
+      - DB_PORT=26257
+      - DB_NAME=mawjood
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_SSL_MODE=disable
+      - SERVICE_PORT=9002
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9002"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+
+  # Optional: gRPC UI for testing
+  grpcui-cms:
+    image: fullstorydev/grpcui:latest
+    container_name: mawjood-grpcui-cms
+    ports:
+      - "8081:8080"
+    command: -plaintext cms-service:9001
+    depends_on:
+      cms-service:
+        condition: service_healthy
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+
+  grpcui-discovery:
+    image: fullstorydev/grpcui:latest
+    container_name: mawjood-grpcui-discovery
+    ports:
+      - "8082:8080"
+    command: -plaintext discovery-service:9002
+    depends_on:
+      discovery-service:
+        condition: service_healthy
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+
+volumes:
+  cockroach_data:
+    driver: local
+
+networks:
+  mawjood-network:
+    driver: bridge 

@@ -73,9 +73,10 @@ This document tracks the development progress of the Mawjood project, breaking i
 
 
 ## Phase: Testing:
-- [ ] Write unit tests for the cms `store` package.
-- [ ] Write unit tests for the discovery `store` package.
-- [ ] Write integration tests for discovery the gRPC endpoints.
+- [x] Write unit tests for the cms `store` package.
+- [x] Write unit tests for the discovery `store` package.
+- [x] Write integration tests for discovery the gRPC endpoints.
+- [x] Write integration tests for cms the gRPC endpoints.
 
 ## Phase 7: Documentation
 - setup
@@ -84,4 +85,5 @@ This document tracks the development progress of the Mawjood project, breaking i
 - trigram matching
 - tools reasoning
 - future work
+- problem faced
 
