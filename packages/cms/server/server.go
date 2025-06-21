@@ -5,12 +5,13 @@ import (
 	"log"
 	"net"
 
+	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	mawjoodv1 "github.com/mosaibah/Mawjood/gen/go/packages/proto/v1"
 	"github.com/mosaibah/Mawjood/packages/cms/store"
-	"github.com/mosaibah/Mawjood/packages/cms/v1"
-	mawjoodv1 "mawjood/gen/go/packages/proto/v1"
+	v1 "github.com/mosaibah/Mawjood/packages/cms/v1"
 )
 
 func main() {
@@ -37,7 +38,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	mawjoodv1.RegisterCMSServiceServer(grpcServer, service)
-	
+
 	// Enable reflection for grpcui
 	reflection.Register(grpcServer)
 

@@ -7,7 +7,7 @@ import (
 	// "fmt"
 	"time"
 
-	mawjoodv1 "mawjood/gen/go/packages/proto/v1"
+	mawjoodv1 "github.com/mosaibah/Mawjood/gen/go/packages/proto/v1"
 
 	"github.com/mosaibah/Mawjood/packages/cms/store"
 	"google.golang.org/grpc/codes"
@@ -27,12 +27,9 @@ func New(store store.Interface) *CMSService {
 func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateContentRequest) (*mawjoodv1.Content, error) {
 	log.Printf("CreateContent started")
 
-	// Validate required fields
-	if req.Title == "" {
-		return nil, status.Error(codes.InvalidArgument, "title is required")
-	}
-	if req.ContentType == mawjoodv1.ContentType_CONTENT_TYPE_UNSPECIFIED {
-		return nil, status.Error(codes.InvalidArgument, "content_type is required")
+	// Use protocol buffer validation
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
 	// Parse published_at if provided
@@ -76,15 +73,9 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateContentRequest) (*mawjoodv1.Content, error) {
 	log.Printf("UpdateContent started - ID: %s", req.Id)
 
-	// Validate required fields
-	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "id is required")
-	}
-	if req.Title == "" {
-		return nil, status.Error(codes.InvalidArgument, "title is required")
-	}
-	if req.ContentType == mawjoodv1.ContentType_CONTENT_TYPE_UNSPECIFIED {
-		return nil, status.Error(codes.InvalidArgument, "content_type is required")
+	// Use protocol buffer validation
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
 	// Parse published_at if provided
@@ -129,9 +120,9 @@ func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateCo
 func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteContentRequest) (*emptypb.Empty, error) {
 	log.Printf("DeleteContent started - ID: %s", req.Id)
 
-	// Validate required fields
-	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "id is required")
+	// Use protocol buffer validation
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
 	// Call store to delete content
@@ -147,6 +138,11 @@ func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteCo
 
 func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListContentsRequest) (*mawjoodv1.ListContentsResponse, error) {
 	log.Printf("ListContents started")
+
+	// Use protocol buffer validation
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
+	}
 
 	// Call store to list contents
 	contents, nextPageToken, err := cs.store.ListContents(ctx, req.PageSize, req.PageToken)
@@ -170,6 +166,11 @@ func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListConte
 
 func (cs *CMSService) ImportFromExternal(ctx context.Context, req *mawjoodv1.ImportRequest) (*mawjoodv1.ImportResponse, error) {
 	log.Printf("ImportFromExternal started")
+
+	// Use protocol buffer validation
+	if err := req.Validate(); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
+	}
 
 	// This is a stretch goal implementation - for now, return unimplemented
 	return nil, status.Error(codes.Unimplemented, "ImportFromExternal is not yet implemented")

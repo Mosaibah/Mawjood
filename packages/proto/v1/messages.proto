@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package mawjood.v1;
 
+option go_package = "mawjood/gen/go/packages/proto/v1";
+
+import "validate/validate.proto";
 
 enum ContentType {
   CONTENT_TYPE_UNSPECIFIED = 0;
@@ -10,78 +13,78 @@ enum ContentType {
 }
 
 message Content {
-  string id = 1; // UUID
-  string title = 2;
-  string description = 3;
-  repeated string tags = 4;
-  string language = 5;
-  int32 duration_seconds = 6;
-  string published_at = 7; 
-  ContentType content_type = 8;
-  string created_at = 9; 
-  string updated_at = 10; 
-  string url = 11;
-  string platform_name = 12;
+  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string title = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string description = 3 [(validate.rules).string.max_len = 5000];
+  repeated string tags = 4 [(validate.rules).repeated = {max_items: 50, items: {string: {min_len: 1, max_len: 100}}}];
+  string language = 5 [(validate.rules).string = {min_len: 2, max_len: 10, pattern: "^[a-z]{2,3}(-[A-Z]{2})?$"}]; // ISO language codes
+  int32 duration_seconds = 6 [(validate.rules).int32 = {gte: 0, lte: 86400}]; // Max 24 hours
+  string published_at = 7 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"]; // ISO 8601 format
+  ContentType content_type = 8 [(validate.rules).enum = {defined_only: true, not_in: [0]}]; // Must be defined and not unspecified
+  string created_at = 9 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
+  string updated_at = 10 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
+  string url = 11 [(validate.rules).string = {min_len: 1, max_len: 2048, uri: true}];
+  string platform_name = 12 [(validate.rules).string = {min_len: 1, max_len: 100}];
 }
 
 message CreateContentRequest {
-  string title = 1;
-  string description = 2;
-  repeated string tags = 3;
-  string language = 4;
-  int32 duration_seconds = 5;
-  string published_at = 6; 
-  ContentType content_type = 7;
-  string url = 8;
-  string platform_name = 9;
+  string title = 1 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string description = 2 [(validate.rules).string.max_len = 5000];
+  repeated string tags = 3 [(validate.rules).repeated = {max_items: 50, items: {string: {min_len: 1, max_len: 100}}}];
+  string language = 4 [(validate.rules).string = {min_len: 2, max_len: 10, pattern: "^[a-z]{2,3}(-[A-Z]{2})?$"}];
+  int32 duration_seconds = 5 [(validate.rules).int32 = {gte: 0, lte: 86400}];
+  string published_at = 6 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
+  ContentType content_type = 7 [(validate.rules).enum = {defined_only: true, not_in: [0]}];
+  string url = 8 [(validate.rules).string = {min_len: 1, max_len: 2048, uri: true}];
+  string platform_name = 9 [(validate.rules).string = {min_len: 1, max_len: 100}];
 }
 
 message GetContentRequest {
-  string id = 1; // UUID
+  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
 }
 
 message UpdateContentRequest {
-  string id = 1; // UUID
-  string title = 2;
-  string description = 3;
-  repeated string tags = 4;
-  string language = 5;
-  int32 duration_seconds = 6;
-  string published_at = 7; 
-  ContentType content_type = 8;
-  string url = 9;
-  string platform_name = 10;
+  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string title = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
+  string description = 3 [(validate.rules).string.max_len = 5000];
+  repeated string tags = 4 [(validate.rules).repeated = {max_items: 50, items: {string: {min_len: 1, max_len: 100}}}];
+  string language = 5 [(validate.rules).string = {min_len: 2, max_len: 10, pattern: "^[a-z]{2,3}(-[A-Z]{2})?$"}];
+  int32 duration_seconds = 6 [(validate.rules).int32 = {gte: 0, lte: 86400}];
+  string published_at = 7 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
+  ContentType content_type = 8 [(validate.rules).enum = {defined_only: true, not_in: [0]}];
+  string url = 9 [(validate.rules).string = {min_len: 1, max_len: 2048, uri: true}];
+  string platform_name = 10 [(validate.rules).string = {min_len: 1, max_len: 100}];
 }
 
 message DeleteContentRequest {
-  string id = 1; // UUID
+  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
 }
 
 message ListContentsRequest {
-  int32 page_size = 1;
-  string page_token = 2;
+  int32 page_size = 1 [(validate.rules).int32 = {gte: 1, lte: 100}]; // Reasonable pagination limits
+  string page_token = 2 [(validate.rules).string.max_len = 1024]; // Optional field, so no min_len
 }
 
 message ListContentsResponse {
-  repeated Content contents = 1;
-  string next_page_token = 2;
+  repeated Content contents = 1 [(validate.rules).repeated.max_items = 100];
+  string next_page_token = 2 [(validate.rules).string.max_len = 1024];
 }
 
 message SearchContentsRequest {
-  string query = 1;
-  int32 page_size = 2;
-  string page_token = 3;
+  string query = 1 [(validate.rules).string = {min_len: 1, max_len: 500}]; // Search query validation
+  int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
+  string page_token = 3 [(validate.rules).string.max_len = 1024];
 }
 
 message SearchContentsResponse {
-  repeated Content contents = 1;
-  string next_page_token = 2;
+  repeated Content contents = 1 [(validate.rules).repeated.max_items = 100];
+  string next_page_token = 2 [(validate.rules).string.max_len = 1024];
 }
 
 message ImportRequest {
-    string url = 1;
+  string url = 1 [(validate.rules).string = {min_len: 1, max_len: 2048, uri: true}];
 }
 
 message ImportResponse {
-    Content content = 1;
+  Content content = 1 [(validate.rules).message.required = true];
 } 

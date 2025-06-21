@@ -56,8 +56,10 @@ This document tracks the development progress of the Mawjood project, breaking i
 ## Phase 5: Random Tasks
 - [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
 - [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
-- [] Improve search
-- [] logging
+- [x] Improve search
+- [x] logging
+- [] input validation
+- [] db design review
 
 ## Phase 6: Providers Service (Future)
 - [ ] **Status:** `Not Started`
@@ -65,6 +67,11 @@ This document tracks the development progress of the Mawjood project, breaking i
 
 - [ ] Define the `ProvidersService` in `packages/proto/mawjood/v1/providers.proto`.
 - [ ] Plan and implement the service logic.
+
+## Optional
+- [ ] Create a `Dockerfile` to containerize the Discovery service.
+- [ ] Create a `Dockerfile` cms to containerize the CMS service.
+
 
 ## Phase: Testing:
 - [ ] Write unit tests for the cms `store` package.
@@ -75,8 +82,4 @@ This document tracks the development progress of the Mawjood project, breaking i
 - folder structure
 - modules bounderies
 - trigram matching
-
-## Optional
-- [ ] Create a `Dockerfile` to containerize the Discovery service.
-- [ ] Create a `Dockerfile` cms to containerize the CMS service.
 

@@ -11,6 +11,7 @@ go_library(
         "//packages/cms/v1:cms",
         "@org_golang_google_grpc//:grpc",
         "@org_golang_google_grpc//reflection",
+        "@com_github_lib_pq//:pq",
     ],
 )
 

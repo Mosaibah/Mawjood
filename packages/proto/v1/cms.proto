@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package mawjood.v1;
 
+option go_package = "mawjood/gen/go/packages/proto/v1";
+
 
 import "messages.proto";
 import "google/protobuf/empty.proto";

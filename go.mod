@@ -3,6 +3,7 @@ module github.com/mosaibah/Mawjood
 go 1.24.4
 
 require (
+	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/lib/pq v1.10.9
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6

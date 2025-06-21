@@ -10,7 +10,10 @@ proto_library(
         "cms.proto", 
         "discovery.proto",
     ],
-    deps = ["@protobuf//:empty_proto"],
+    deps = [
+        "@protobuf//:empty_proto",
+        "@protoc-gen-validate//validate:validate_proto",
+    ],
     strip_import_prefix = "/packages/proto/v1",
     visibility = ["//visibility:public"],
 )
@@ -18,17 +21,21 @@ proto_library(
 # Go proto library with gRPC support
 go_proto_library(
     name = "mawjood_go_proto",
-    compilers = ["@rules_go//proto:go_grpc"],
+    compilers = [
+        "@rules_go//proto:go_grpc",
+        "@protoc-gen-validate//bazel/go:pgv_plugin_go",
+    ],
     proto = ":mawjood_proto",
-    importpath = "mawjood/gen/go/packages/proto/v1",
+    importpath = "github.com/mosaibah/Mawjood/gen/go/packages/proto/v1",
     visibility = ["//visibility:public"],
+    deps = ["@protoc-gen-validate//validate:validate_go_proto"],
 )
 
 # Go library that exports the generated code
 go_library(
     name = "v1",
     embed = [":mawjood_go_proto"],
-    importpath = "mawjood/gen/go/packages/proto/v1",
+    importpath = "github.com/mosaibah/Mawjood/gen/go/packages/proto/v1",
     visibility = ["//visibility:public"],
 )
 
