@@ -13,13 +13,14 @@ go_library(
     ],
 )
 
-# go_test(
-#     name = "discovery_test",
-#     srcs = ["service_test.go"],
-#     embed = [":discovery"],
-#     deps = [
-#         "//packages/proto/v1:v1",
-#         "//packages/discovery/mock",
-#         "@com_github_stretchr_testify//assert",
-#     ],
-# ) 
+go_test(
+    name = "discovery_test",
+    srcs = ["service_test.go"],
+    embed = [":discovery"],
+    deps = [
+        "//packages/proto/v1:v1",
+        "//packages/discovery/mock",
+        "@org_golang_google_grpc//codes",
+        "@org_golang_google_grpc//status",
+    ],
+) 
