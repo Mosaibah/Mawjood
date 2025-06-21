@@ -54,17 +54,16 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [x] Set up the main gRPC server for the Discovery service.
 
 ## Phase 5: Random Tasks
-- [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
-- [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
 - [x] Improve search
 - [x] logging
-- [] input validation
-- [] db design review
+- [x] input validation
+- [x] db design review
 
 ## Phase 6: Providers Service (Future)
 - [ ] **Status:** `Not Started`
 - **Goal:** Design and implement the service for integrating with external content providers. This will be tackled after the core services are complete.
-
+- [ ] **(Stretch Goal)** Implement the `ImportFromExternal` gRPC endpoint.
+- [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
 - [ ] Define the `ProvidersService` in `packages/proto/mawjood/v1/providers.proto`.
 - [ ] Plan and implement the service logic.
 
@@ -79,7 +78,10 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [ ] Write integration tests for discovery the gRPC endpoints.
 
 ## Phase 7: Documentation
+- setup
 - folder structure
 - modules bounderies
 - trigram matching
+- tools reasoning
+- future work
 

@@ -1,0 +1,9 @@
+load("@rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "mock",
+    srcs = ["mock.go"],
+    importpath = "github.com/mosaibah/Mawjood/packages/cms/mock",
+    visibility = ["//visibility:public"],
+    deps = ["//packages/cms/store"],
+) 

@@ -94,22 +94,22 @@ ON CONFLICT (name) DO NOTHING;
 -- Insert seed data for contents (podcasts and documentaries)
 INSERT INTO contents (title, description, language, duration_seconds, published_at, content_type, url, platform_name) VALUES 
     -- Podcasts
-    ('The Daily Tech Brief', 'Your daily dose of technology news and insights from around the world. Covering AI, startups, and the latest innovations.', 'English', 1800, '2024-01-15 08:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Science Friday', 'Weekly discussions about science, technology, and other cool stuff. Hosted by Ira Flatow.', 'English', 3600, '2024-01-12 14:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Hidden Brain', 'Shankar Vedantam uses science and storytelling to reveal the unconscious patterns that drive human behavior.', 'English', 2700, '2024-01-10 09:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('The Daily Tech Brief', 'Your daily dose of technology news and insights from around the world. Covering AI, startups, and the latest innovations.', 'en', 1800, '2024-01-15T08:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Science Friday', 'Weekly discussions about science, technology, and other cool stuff. Hosted by Ira Flatow.', 'en', 3600, '2024-01-12T14:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Hidden Brain', 'Shankar Vedantam uses science and storytelling to reveal the unconscious patterns that drive human behavior.', 'en', 2700, '2024-01-10T09:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
 
     -- Documentaries
-    ('The Blue Planet', 'A comprehensive exploration of the world''s oceans, revealing the extraordinary creatures that inhabit them.', 'English', 3600, '2024-01-20 20:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Cosmos: A Spacetime Odyssey', 'Hosted by Neil deGrasse Tyson, this series explores how we discovered the laws of nature and found our coordinates in space and time.', 'English', 5400, '2024-01-18 19:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('The Civil War', 'Ken Burns'' epic documentary about the American Civil War, featuring archival photographs and first-person accounts.', 'English', 7200, '2024-01-16 21:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Planet Earth II', 'Experience the world from the viewpoint of animals themselves, using cutting-edge technology.', 'English', 3600, '2024-01-14 18:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('The Last Dance', 'A 10-part documentary series about Michael Jordan and the Chicago Bulls dynasty of the 1990s.', 'English', 4800, '2024-01-12 22:00:00+00', 'documentary', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
+    ('The Blue Planet', 'A comprehensive exploration of the world''s oceans, revealing the extraordinary creatures that inhabit them.', 'en', 3600, '2024-01-20T20:00:00Z', 'documentary', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Cosmos: A Spacetime Odyssey', 'Hosted by Neil deGrasse Tyson, this series explores how we discovered the laws of nature and found our coordinates in space and time.', 'en', 5400, '2024-01-18T19:00:00Z', 'documentary', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('The Civil War', 'Ken Burns'' epic documentary about the American Civil War, featuring archival photographs and first-person accounts.', 'en', 7200, '2024-01-16T21:00:00Z', 'documentary', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Planet Earth II', 'Experience the world from the viewpoint of animals themselves, using cutting-edge technology.', 'en', 3600, '2024-01-14T18:00:00Z', 'documentary', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('The Last Dance', 'A 10-part documentary series about Michael Jordan and the Chicago Bulls dynasty of the 1990s.', 'en', 4800, '2024-01-12T22:00:00Z', 'documentary', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
     
     -- More diverse content
-    ('Arabic Tech Talk', 'تحدث عن التكنولوجيا باللغة العربية - مناقشات حول الذكاء الاصطناعي والابتكار', 'Arabic', 2400, '2024-01-22 10:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Historia de México', 'Un podcast que explora la rica historia de México, desde los aztecas hasta la época moderna.', 'Spanish', 3000, '2024-01-20 16:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Le Monde en Français', 'L''actualité internationale analysée et expliquée en français.', 'French', 2100, '2024-01-19 11:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube'),
-    ('Die Deutsche Welle', 'Nachrichten und Hintergrundberichte aus Deutschland und der Welt.', 'German', 1800, '2024-01-17 13:00:00+00', 'podcast', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'YouTube')
+    ('Arabic Tech Talk', 'تحدث عن التكنولوجيا باللغة العربية - مناقشات حول الذكاء الاصطناعي والابتكار', 'ar', 2400, '2024-01-22T10:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Historia de México', 'Un podcast que explora la rica historia de México, desde los aztecas hasta la época moderna.', 'es', 3000, '2024-01-20T16:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Le Monde en Français', 'L''actualité internationale analysée et expliquée en français.', 'fr', 2100, '2024-01-19T11:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube'),
+    ('Die Deutsche Welle', 'Nachrichten und Hintergrundberichte aus Deutschland und der Welt.', 'de', 1800, '2024-01-17T13:00:00Z', 'podcast', 'https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG', 'YouTube')
 ON CONFLICT DO NOTHING;
 
 -- Associate content with tags

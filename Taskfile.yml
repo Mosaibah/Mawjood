@@ -52,7 +52,32 @@ tasks:
   test:all:
     desc: Run all tests
     cmds:
-      - '{{.BAZEL}} test //...'
+      - '{{.BAZEL}} test //... --test_output=all'
+
+  test:cms:
+    desc: Run CMS service tests
+    cmds:
+      - '{{.BAZEL}} test //{{.CMS_DIR}}/... --test_output=all'
+
+  test:cms:store:
+    desc: Run CMS store tests
+    cmds:
+      - '{{.BAZEL}} test //{{.CMS_DIR}}/store:store_test --test_output=all'
+
+  test:cms:service:
+    desc: Run CMS service layer tests
+    cmds:
+      - '{{.BAZEL}} test //{{.CMS_DIR}}/v1:cms_test --test_output=all'
+
+  test:discovery:
+    desc: Run Discovery service tests
+    cmds:
+      - '{{.BAZEL}} test //{{.DISCOVERY_DIR}}/... --test_output=all'
+
+  test:watch:
+    desc: Run tests in watch mode (requires ibazel)
+    cmds:
+      - ibazel test //... --test_output=all
 
   status:
     desc: Show project status
@@ -80,11 +105,23 @@ tasks:
       - task status
       - echo ""
       - echo "Available commands:"
+      - echo "Build commands:"
       - echo "  task proto:build      - Build proto files and generate Go code"
       - echo "  task cms:build        - Build CMS service"
-      - echo "  task cms:run          - Run CMS service"
       - echo "  task discovery:build  - Build Discovery service"
-      - echo "  task discovery:run    - Run Discovery service"
       - echo "  task build:all        - Build entire project"
+      - echo ""
+      - echo "Run commands:"
+      - echo "  task cms:run          - Run CMS service"
+      - echo "  task discovery:run    - Run Discovery service"
+      - echo ""
+      - echo "Test commands:"
       - echo "  task test:all         - Run all tests"
+      - echo "  task test:cms         - Run CMS service tests"
+      - echo "  task test:cms:store   - Run CMS store tests"
+      - echo "  task test:cms:service - Run CMS service layer tests"
+      - echo "  task test:discovery   - Run Discovery service tests"
+      - echo "  task test:watch       - Run tests in watch mode (requires ibazel)"
+      - echo ""
+      - echo "Setup commands:"
       - echo "  task dev:setup        - Setup development environment" 

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	mawjoodv1 "mawjood/gen/go/packages/proto/v1"
+	mawjoodv1 "github.com/mosaibah/Mawjood/gen/go/packages/proto/v1"
 
 	"github.com/mosaibah/Mawjood/packages/discovery/store"
 	v1 "github.com/mosaibah/Mawjood/packages/discovery/v1"
