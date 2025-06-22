@@ -71,7 +71,7 @@ services:
     image: ${DOCKER_USERNAME}/mawjood-discovery:latest  
     container_name: mawjood-discovery
     ports:
-      - "127.0.0.1:9002:9002"  # Expose gRPC directly to system nginx
+      - "127.0.0.1:9002:9002"  # Internal gRPC port
     environment:
       - DB_HOST=cockroachdb
       - DB_PORT=26257
@@ -90,6 +90,32 @@ services:
         limits:
           memory: 512M
           cpus: '0.5'
+
+  # gRPC-UI for CMS Service
+  cms-grpc-ui:
+    image: fullstorydev/grpcui:latest
+    container_name: mawjood-cms-grpc-ui
+    ports:
+      - "127.0.0.1:8081:8080"  # Expose web UI to nginx
+    command: ["-plaintext", "-bind", "0.0.0.0", "-port", "8080", "cms-service:9001"]
+    depends_on:
+      - cms-service
+    networks:
+      - mawjood-network
+    restart: unless-stopped
+
+  # gRPC-UI for Discovery Service  
+  discovery-grpc-ui:
+    image: fullstorydev/grpcui:latest
+    container_name: mawjood-discovery-grpc-ui
+    ports:
+      - "127.0.0.1:8082:8080"  # Expose web UI to nginx
+    command: ["-plaintext", "-bind", "0.0.0.0", "-port", "8080", "discovery-service:9002"]
+    depends_on:
+      - discovery-service
+    networks:
+      - mawjood-network
+    restart: unless-stopped
 
 volumes:
   cockroach_data:
