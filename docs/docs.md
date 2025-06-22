@@ -76,6 +76,7 @@ LIMIT $1
 - Centralize Docker, Kubernetes, and server configurations
 - Currently avoided due to extensive path updates required
 - k8s :)
+- CI/CD pipeline (very simple and straight forward since I'm already using docker registry)
 
 
 **Random Notes:**
