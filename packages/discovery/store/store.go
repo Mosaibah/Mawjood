@@ -40,7 +40,6 @@ type Content struct {
 }
 
 func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, error) {
-	// Get the content details (only non-deleted content)
 	getContentQuery := `
 		SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 		FROM contents 
@@ -72,7 +71,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 		return nil, fmt.Errorf("failed to get content: %w", err)
 	}
 
-	// Handle nullable fields
 	content.Description = description.String
 	content.Language = language.String
 	content.ExternalURL = url.String
@@ -82,7 +80,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 	content.CreatedAt = createdAt
 	content.UpdatedAt = updatedAt
 
-	// Get associated tags
 	tags, err := cd.getContentTags(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get content tags: %w", err)
@@ -93,31 +90,26 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 }
 
 func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageToken string) ([]Content, string, error) {
-	// Default page size if not specified
 	if pageSize <= 0 {
 		pageSize = 10
 	}
 
-	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
 	}
 
-	// Build the query with pagination
 	var query string
 	var args []interface{}
 
 	if pageToken == "" {
-		// First page (only non-deleted content)
 		query = `
 			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
 			WHERE deleted_at IS NULL
 			ORDER BY created_at DESC 
 			LIMIT $1`
-		args = []interface{}{pageSize + 1} // Get one extra to determine if there's a next page
+		args = []interface{}{pageSize + 1}
 	} else {
-		// Subsequent pages - use cursor-based pagination (only non-deleted content)
 		query = `
 			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name
 			FROM contents 
@@ -157,7 +149,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
 		}
 
-		// Handle nullable fields
 		content.Description = description.String
 		content.Language = language.String
 		content.ExternalURL = url.String
@@ -167,7 +158,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 		content.CreatedAt = createdAt
 		content.UpdatedAt = updatedAt
 
-		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to get content tags: %w", err)
@@ -181,10 +171,8 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 		return nil, "", fmt.Errorf("error iterating over content rows: %w", err)
 	}
 
-	// Determine next page token
 	var nextPageToken string
 	if len(contents) > int(pageSize) {
-		// Remove the extra record and use the last record's ID as the next page token
 		contents = contents[:pageSize]
 		nextPageToken = contents[len(contents)-1].ID
 	}
@@ -193,34 +181,28 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 }
 
 func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSize int32, pageToken string) ([]Content, string, error) {
-	// Default page size if not specified
 	if pageSize <= 0 {
 		pageSize = 10
 	}
 
-	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
 	}
 
-	// Sanitize the search query for full-text search
 	searchQuery := strings.TrimSpace(query)
 	if searchQuery == "" {
 		return []Content{}, "", nil
 	}
 
-	// Set similarity threshold for trigram matching
 	_, err := cd.db.ExecContext(ctx, "SET SESSION pg_trgm.similarity_threshold = 0.10")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to set similarity threshold: %w", err)
 	}
 
-	// Build the search query with similarity ranking and pagination
 	var sqlQuery string
 	var args []interface{}
 
 	if pageToken == "" {
-		// First page - search using trigram similarity with ranking including tags
 		sqlQuery = `
 			WITH content_with_tags AS (
 				SELECT 
@@ -258,7 +240,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		likeQuery := "%" + searchQuery + "%"
 		args = []interface{}{searchQuery, likeQuery, pageSize + 1}
 	} else {
-		// Subsequent pages with cursor-based pagination
 		sqlQuery = `
 			WITH content_with_tags AS (
 				SELECT 
@@ -330,7 +311,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
 		}
 
-		// Handle nullable fields
 		content.Description = description.String
 		content.Language = language.String
 		content.ExternalURL = url.String
@@ -340,7 +320,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		content.CreatedAt = createdAt
 		content.UpdatedAt = updatedAt
 
-		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to get content tags: %w", err)
@@ -354,10 +333,8 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		return nil, "", fmt.Errorf("error iterating over search results: %w", err)
 	}
 
-	// Determine next page token
 	var nextPageToken string
 	if len(contents) > int(pageSize) {
-		// Remove the extra record and use the last record's ID as the next page token
 		contents = contents[:pageSize]
 		nextPageToken = contents[len(contents)-1].ID
 	}
@@ -365,7 +342,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 	return contents, nextPageToken, nil
 }
 
-// Helper function to get tags for a specific content
 func (cd *ContentData) getContentTags(ctx context.Context, contentID string) ([]string, error) {
 	query := `
 		SELECT t.name 

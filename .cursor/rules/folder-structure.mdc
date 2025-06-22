@@ -11,22 +11,6 @@ This document explains how our project's folders are organized. This structure i
 
 Our system is composed of three main services, each with distinct responsibilities:
 
-```mermaid
-graph TD
-    A[External Search API] -.-> B[CMS]
-    C[User] --> D[Discovery]
-    E[Admin] --> B
-    B --> F[(Database)]
-    D --> F
-    
-    style A fill:#e1f5fe
-    style B fill:#f3e5f5
-    style C fill:#e8f5e8
-    style D fill:#fff3e0
-    style E fill:#fce4ec
-    style F fill:#f1f8e9
-```
-
 ### Service Responsibilities
 
 - **Discovery Service**: Handles user-facing content search and discovery
@@ -63,11 +47,6 @@ service DiscoveryService {
   // Searches for content based on a query
   rpc SearchContents(SearchContentsRequest) returns (SearchContentsResponse);
   
-  // Lists all content with pagination
-  rpc ListContents(ListContentsRequest) returns (ListContentsResponse);
-  
-  // Gets a specific piece of content by ID
-  rpc GetContent(GetContentRequest) returns (Content);
 }
 ```
 
@@ -85,18 +64,6 @@ import "google/protobuf/empty.proto";
 service CMSService {
   // Creates a new piece of content
   rpc CreateContent(CreateContentRequest) returns (Content);
-  
-  // Updates an existing piece of content
-  rpc UpdateContent(UpdateContentRequest) returns (Content);
-  
-  // Deletes a piece of content
-  rpc DeleteContent(DeleteContentRequest) returns (google.protobuf.Empty);
-  
-  // Lists all content for admin management
-  rpc ListContents(ListContentsRequest) returns (ListContentsResponse);
-  
-  // Imports content from external sources
-  rpc ImportFromExternal(ImportRequest) returns (ImportResponse);
 }
 ```
 
@@ -177,113 +144,6 @@ This service will handle integrations with external content platforms (future im
 -   **`mock/`**: Mock implementations for testing
 -   **`Dockerfile`**: Container configuration
 -   **`BUILD.bazel`**: Bazel build configuration
-
-## Database Schema
-
-Both Discovery and CMS services share the same CockroachDB database (temporary design):
-
-### Tables
-
-#### `platforms`
-
-This table stores information about content platforms (YouTube, Spotify, Apple Podcasts, etc.).
-
-```sql
-CREATE TABLE platforms (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT,
-    api_endpoint VARCHAR(255),
-    is_active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-#### `contents`
-
-This table stores the core content metadata with a reference to its platform.
-
-```sql
-CREATE TABLE contents (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    language VARCHAR(50),
-    duration_seconds INT,
-    published_at TIMESTAMPTZ,
-    content_type VARCHAR(20) NOT NULL,
-    platform_id UUID REFERENCES platforms(id),
-    external_id VARCHAR(255), -- ID from the external platform (e.g., YouTube video ID)
-    url VARCHAR(500), -- Direct URL to the content on the platform
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-```
-
-#### `tags`
-
-This table stores unique tags.
-
-```sql
-CREATE TABLE tags (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL UNIQUE
-);
-```
-
-#### `content_tags`
-
-This is a join table to associate content with tags.
-
-```sql
-CREATE TABLE content_tags (
-    content_id UUID NOT NULL REFERENCES contents(id) ON DELETE CASCADE,
-    tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-    PRIMARY KEY (content_id, tag_id)
-);
-```
-
-### Indexes
-
-To support efficient querying for the search functionality:
-
-```sql
--- Index for searching content by title
-CREATE INDEX ON contents (title);
-
--- For full-text search, CockroachDB supports trigram indexes.
--- This can be used to implement the SearchContents RPC.
-CREATE INVERTED INDEX ON contents (title gin_trgm_ops);
-CREATE INVERTED INDEX ON contents (description gin_trgm_ops);
-
--- Index for finding tags by name
-CREATE INDEX ON tags (name);
-
--- Index for finding platforms by name
-CREATE INDEX ON platforms (name);
-
--- Indexes on the join table for efficient lookups in both directions
-CREATE INDEX ON content_tags (tag_id);
-
--- Index for content by platform
-CREATE INDEX ON contents (platform_id);
-
--- Index for external ID lookups (useful for avoiding duplicates)
-CREATE INDEX ON contents (platform_id, external_id);
-```
-
-### Sample Platform Data
-
-```sql
--- Insert some common platforms
-INSERT INTO platforms (name, description, api_endpoint) VALUES
-('YouTube', 'YouTube video platform', 'https://www.googleapis.com/youtube/v3'),
-('Spotify', 'Spotify podcast platform', 'https://api.spotify.com/v1'),
-('Apple Podcasts', 'Apple Podcasts platform', 'https://itunes.apple.com'),
-('SoundCloud', 'SoundCloud audio platform', 'https://api.soundcloud.com'),
-('Internal', 'Internally created content', NULL);
-```
 
 ## Why this structure?
 

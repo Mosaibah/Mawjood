@@ -13,14 +13,14 @@ enum ContentType {
 }
 
 message Content {
-  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string id = 1 [(validate.rules).string.uuid = true]; 
   string title = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
   string description = 3 [(validate.rules).string.max_len = 5000];
   repeated string tags = 4 [(validate.rules).repeated = {max_items: 50, items: {string: {min_len: 1, max_len: 100}}}];
-  string language = 5 [(validate.rules).string = {min_len: 2, max_len: 10, pattern: "^[a-z]{2,3}(-[A-Z]{2})?$"}]; // ISO language codes
-  int32 duration_seconds = 6 [(validate.rules).int32 = {gte: 0, lte: 86400}]; // Max 24 hours
-  string published_at = 7 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"]; // ISO 8601 format
-  ContentType content_type = 8 [(validate.rules).enum = {defined_only: true, not_in: [0]}]; // Must be defined and not unspecified
+  string language = 5 [(validate.rules).string = {min_len: 2, max_len: 10, pattern: "^[a-z]{2,3}(-[A-Z]{2})?$"}]; 
+  int32 duration_seconds = 6 [(validate.rules).int32 = {gte: 0, lte: 86400}]; 
+  string published_at = 7 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"]; 
+  ContentType content_type = 8 [(validate.rules).enum = {defined_only: true, not_in: [0]}]; 
   string created_at = 9 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
   string updated_at = 10 [(validate.rules).string.pattern = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(Z|[+-]\\d{2}:\\d{2})$"];
   string url = 11 [(validate.rules).string = {min_len: 1, max_len: 2048, uri: true}];
@@ -40,11 +40,11 @@ message CreateContentRequest {
 }
 
 message GetContentRequest {
-  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string id = 1 [(validate.rules).string.uuid = true]; 
 }
 
 message UpdateContentRequest {
-  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string id = 1 [(validate.rules).string.uuid = true]; 
   string title = 2 [(validate.rules).string = {min_len: 1, max_len: 255}];
   string description = 3 [(validate.rules).string.max_len = 5000];
   repeated string tags = 4 [(validate.rules).repeated = {max_items: 50, items: {string: {min_len: 1, max_len: 100}}}];
@@ -57,12 +57,12 @@ message UpdateContentRequest {
 }
 
 message DeleteContentRequest {
-  string id = 1 [(validate.rules).string.uuid = true]; // UUID validation
+  string id = 1 [(validate.rules).string.uuid = true]; 
 }
 
 message ListContentsRequest {
-  int32 page_size = 1 [(validate.rules).int32 = {gte: 1, lte: 100}]; // Reasonable pagination limits
-  string page_token = 2 [(validate.rules).string.max_len = 1024]; // Optional field, so no min_len
+  int32 page_size = 1 [(validate.rules).int32 = {gte: 1, lte: 100}]; 
+  string page_token = 2 [(validate.rules).string.max_len = 1024]; 
 }
 
 message ListContentsResponse {
@@ -71,7 +71,7 @@ message ListContentsResponse {
 }
 
 message SearchContentsRequest {
-  string query = 1 [(validate.rules).string = {min_len: 1, max_len: 500}]; // Search query validation
+  string query = 1 [(validate.rules).string = {min_len: 1, max_len: 500}]; 
   int32 page_size = 2 [(validate.rules).int32 = {gte: 1, lte: 100}];
   string page_token = 3 [(validate.rules).string.max_len = 1024];
 }

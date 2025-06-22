@@ -58,6 +58,10 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [x] logging
 - [x] input validation
 - [x] db design review
+- [x] Create a `Dockerfile` to containerize the Discovery service.
+- [x] Create a `Dockerfile` cms to containerize the CMS service.
+
+
 
 ## Phase 6: Providers Service (Future)
 - [ ] **Status:** `Not Started`
@@ -66,11 +70,6 @@ This document tracks the development progress of the Mawjood project, breaking i
 - [] **(Stretch Goal)** Implement the client for an external API (e.g., YouTube).
 - [ ] Define the `ProvidersService` in `packages/proto/mawjood/v1/providers.proto`.
 - [ ] Plan and implement the service logic.
-
-## Optional
-- [ ] Create a `Dockerfile` to containerize the Discovery service.
-- [ ] Create a `Dockerfile` cms to containerize the CMS service.
-
 
 ## Phase: Testing:
 - [x] Write unit tests for the cms `store` package.
@@ -86,4 +85,8 @@ This document tracks the development progress of the Mawjood project, breaking i
 - tools reasoning
 - future work
 - problem faced
+- create infra folder
+- testing
+- sample create data
+- pagination
 

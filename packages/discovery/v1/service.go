@@ -24,12 +24,10 @@ func New(store store.Interface) *DiscoveryService {
 func (ds *DiscoveryService) GetContent(ctx context.Context, req *mawjoodv1.GetContentRequest) (*mawjoodv1.Content, error) {
 	log.Printf("GetContent started - ID: %s", req.Id)
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Call store to get content
 	content, err := ds.store.GetContent(ctx, req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "failed to get content: %v", err)
@@ -37,25 +35,21 @@ func (ds *DiscoveryService) GetContent(ctx context.Context, req *mawjoodv1.GetCo
 
 	log.Printf("GetContent completed successfully - ID: %s", content.ID)
 
-	// Convert store content to proto response
 	return ds.storeContentToProto(content), nil
 }
 
 func (ds *DiscoveryService) ListContents(ctx context.Context, req *mawjoodv1.ListContentsRequest) (*mawjoodv1.ListContentsResponse, error) {
 	log.Printf("ListContents started")
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Call store to list contents
 	contents, nextPageToken, err := ds.store.ListContents(ctx, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to list contents: %v", err)
 	}
 
-	// Convert store contents to proto contents
 	protoContents := make([]*mawjoodv1.Content, len(contents))
 	for i, content := range contents {
 		protoContents[i] = ds.storeContentToProto(&content)
@@ -72,18 +66,15 @@ func (ds *DiscoveryService) ListContents(ctx context.Context, req *mawjoodv1.Lis
 func (ds *DiscoveryService) SearchContents(ctx context.Context, req *mawjoodv1.SearchContentsRequest) (*mawjoodv1.SearchContentsResponse, error) {
 	log.Printf("SearchContents started - query: %s", req.Query)
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Call store to search contents
 	contents, nextPageToken, err := ds.store.SearchContents(ctx, req.Query, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to search contents: %v", err)
 	}
 
-	// Convert store contents to proto contents
 	protoContents := make([]*mawjoodv1.Content, len(contents))
 	for i, content := range contents {
 		protoContents[i] = ds.storeContentToProto(&content)
@@ -97,7 +88,6 @@ func (ds *DiscoveryService) SearchContents(ctx context.Context, req *mawjoodv1.S
 	}, nil
 }
 
-// Helper function to convert string to proto ContentType
 func (ds *DiscoveryService) stringToProtoContentType(contentType string) mawjoodv1.ContentType {
 	switch contentType {
 	case "podcast":
@@ -105,11 +95,10 @@ func (ds *DiscoveryService) stringToProtoContentType(contentType string) mawjood
 	case "documentary":
 		return mawjoodv1.ContentType_CONTENT_TYPE_DOCUMENTARY
 	default:
-		return mawjoodv1.ContentType_CONTENT_TYPE_PODCAST // default fallback
+		return mawjoodv1.ContentType_CONTENT_TYPE_PODCAST 
 	}
 }
 
-// Helper function to convert store.Content to proto Content
 func (ds *DiscoveryService) storeContentToProto(content *store.Content) *mawjoodv1.Content {
 	var publishedAt string
 	if !content.PublishedAt.IsZero() {

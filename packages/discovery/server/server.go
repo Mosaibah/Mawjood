@@ -18,7 +18,6 @@ import (
 )
 
 func main() {
-	// Get database configuration from environment variables
 	dbHost := getEnv("DB_HOST", "localhost")
 	dbPort := getEnv("DB_PORT", "26257")
 	dbName := getEnv("DB_NAME", "mawjood")
@@ -27,7 +26,6 @@ func main() {
 	dbSSLMode := getEnv("DB_SSL_MODE", "disable")
 	servicePort := getEnv("SERVICE_PORT", "9002")
 
-	// Build connection string
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s&parseTime=true",
 		dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
 
@@ -37,7 +35,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Test the connection
 	if err := db.Ping(); err != nil {
 		log.Fatalf("failed to ping database: %v", err)
 	}
@@ -53,7 +50,6 @@ func main() {
 	grpcServer := grpc.NewServer()
 	mawjoodv1.RegisterDiscoveryServiceServer(grpcServer, service)
 
-	// Enable reflection for grpcui
 	reflection.Register(grpcServer)
 
 	log.Printf("Discovery server starting on :%s", servicePort)
@@ -62,7 +58,6 @@ func main() {
 	}
 }
 
-// getEnv gets an environment variable with a fallback value
 func getEnv(key, fallback string) string {
 	if value := os.Getenv(key); value != "" {
 		return value

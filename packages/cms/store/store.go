@@ -44,14 +44,12 @@ type Content struct {
 }
 
 func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Content, error) {
-	// Start a transaction to handle content and tags insertion
 	tx, err := cd.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
 
-	// Insert the content
 	insertContentQuery := `
 		INSERT INTO contents (title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -78,10 +76,8 @@ func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Con
 		return nil, fmt.Errorf("failed to insert content: %w", err)
 	}
 
-	// Handle tags insertion
 	if len(content.Tags) > 0 {
 		for _, tagName := range content.Tags {
-			// Insert tag if it doesn't exist, or get existing tag ID
 			var tagID string
 			upsertTagQuery := `
 				INSERT INTO tags (id, name) 
@@ -94,7 +90,6 @@ func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Con
 				return nil, fmt.Errorf("failed to upsert tag %s: %w", tagName, err)
 			}
 
-			// Link content to tag
 			insertContentTagQuery := `
 				INSERT INTO content_tags (content_id, tag_id)
 				VALUES ($1, $2)
@@ -107,7 +102,6 @@ func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Con
 		}
 	}
 
-	// Commit the transaction
 	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
@@ -116,7 +110,6 @@ func (cd *ContentData) CreateContent(ctx context.Context, content Content) (*Con
 }
 
 func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, error) {
-	// Get the content details (only non-deleted content)
 	getContentQuery := `
 		SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
 		FROM contents 
@@ -150,7 +143,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 		return nil, fmt.Errorf("failed to get content: %w", err)
 	}
 
-	// Handle nullable fields
 	content.Description = description.String
 	content.Language = language.String
 	content.ExternalURL = url.String
@@ -163,7 +155,6 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 		content.DeletedAt = &deletedAt.Time
 	}
 
-	// Get associated tags
 	tags, err := cd.getContentTags(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get content tags: %w", err)
@@ -174,14 +165,12 @@ func (cd *ContentData) GetContent(ctx context.Context, id string) (*Content, err
 }
 
 func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Content, error) {
-	// Start a transaction to handle content and tags update
 	tx, err := cd.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
 
-	// Update the content (only if not soft deleted)
 	updateContentQuery := `
 		UPDATE contents 
 		SET title = $1, description = $2, language = $3, duration_seconds = $4, published_at = $5, content_type = $6, updated_at = $7, url = $8, platform_name = $9
@@ -211,17 +200,14 @@ func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Con
 		return nil, fmt.Errorf("failed to update content: %w", err)
 	}
 
-	// Remove existing tag associations
 	deleteTagsQuery := `DELETE FROM content_tags WHERE content_id = $1`
 	_, err = tx.ExecContext(ctx, deleteTagsQuery, content.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to remove existing tags: %w", err)
 	}
 
-	// Handle new tags insertion
 	if len(content.Tags) > 0 {
 		for _, tagName := range content.Tags {
-			// Insert tag if it doesn't exist, or get existing tag ID
 			var tagID string
 			upsertTagQuery := `
 				INSERT INTO tags (id, name) 
@@ -234,7 +220,6 @@ func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Con
 				return nil, fmt.Errorf("failed to upsert tag %s: %w", tagName, err)
 			}
 
-			// Link content to tag
 			insertContentTagQuery := `
 				INSERT INTO content_tags (content_id, tag_id)
 				VALUES ($1, $2)
@@ -247,7 +232,6 @@ func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Con
 		}
 	}
 
-	// Commit the transaction
 	if err = tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
@@ -256,7 +240,6 @@ func (cd *ContentData) UpdateContent(ctx context.Context, content Content) (*Con
 }
 
 func (cd *ContentData) DeleteContent(ctx context.Context, id string) error {
-	// Soft delete: set deleted_at timestamp instead of actually deleting the record
 	now := time.Now()
 	softDeleteQuery := `
 		UPDATE contents 
@@ -281,31 +264,26 @@ func (cd *ContentData) DeleteContent(ctx context.Context, id string) error {
 }
 
 func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageToken string) ([]Content, string, error) {
-	// Default page size if not specified
 	if pageSize <= 0 {
 		pageSize = 10
 	}
 
-	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
 	}
 
-	// Build the query with pagination
 	var query string
 	var args []interface{}
 
 	if pageToken == "" {
-		// First page (only non-deleted content)
 		query = `
 			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
 			FROM contents 
 			WHERE deleted_at IS NULL
 			ORDER BY created_at DESC 
 			LIMIT $1`
-		args = []interface{}{pageSize + 1} // Get one extra to determine if there's a next page
+		args = []interface{}{pageSize + 1}
 	} else {
-		// Subsequent pages - use cursor-based pagination (only non-deleted content)
 		query = `
 			SELECT id, title, description, language, duration_seconds, published_at, content_type, created_at, updated_at, url, platform_name, deleted_at
 			FROM contents 
@@ -347,7 +325,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
 		}
 
-		// Handle nullable fields
 		content.Description = description.String
 		content.Language = language.String
 		content.ExternalURL = url.String
@@ -360,7 +337,6 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 			content.DeletedAt = &deletedAt.Time
 		}
 
-		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to get content tags: %w", err)
@@ -374,10 +350,8 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 		return nil, "", fmt.Errorf("error iterating over content rows: %w", err)
 	}
 
-	// Determine next page token
 	var nextPageToken string
 	if len(contents) > int(pageSize) {
-		// Remove the extra record and use the last record's ID as the next page token
 		contents = contents[:pageSize]
 		nextPageToken = contents[len(contents)-1].ID
 	}
@@ -386,34 +360,28 @@ func (cd *ContentData) ListContents(ctx context.Context, pageSize int32, pageTok
 }
 
 func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSize int32, pageToken string) ([]Content, string, error) {
-	// Default page size if not specified
 	if pageSize <= 0 {
 		pageSize = 10
 	}
 
-	// Maximum page size limit
 	if pageSize > 100 {
 		pageSize = 100
 	}
 
-	// Sanitize the search query for full-text search
 	searchQuery := strings.TrimSpace(query)
 	if searchQuery == "" {
 		return []Content{}, "", nil
 	}
 
-	// Set similarity threshold for trigram matching
 	_, err := cd.db.ExecContext(ctx, "SET SESSION pg_trgm.similarity_threshold = 0.10")
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to set similarity threshold: %w", err)
 	}
 
-	// Build the search query with similarity ranking and pagination
 	var sqlQuery string
 	var args []interface{}
 
 	if pageToken == "" {
-		// First page - search using trigram similarity with ranking including tags
 		sqlQuery = `
 			WITH content_with_tags AS (
 				SELECT 
@@ -451,7 +419,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		likeQuery := "%" + searchQuery + "%"
 		args = []interface{}{searchQuery, likeQuery, pageSize + 1}
 	} else {
-		// Subsequent pages with cursor-based pagination
 		sqlQuery = `
 			WITH content_with_tags AS (
 				SELECT 
@@ -525,7 +492,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 			return nil, "", fmt.Errorf("failed to scan content row: %w", err)
 		}
 
-		// Handle nullable fields
 		content.Description = description.String
 		content.Language = language.String
 		content.ExternalURL = url.String
@@ -538,7 +504,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 			content.DeletedAt = &deletedAt.Time
 		}
 
-		// Get associated tags
 		tags, err := cd.getContentTags(ctx, content.ID)
 		if err != nil {
 			return nil, "", fmt.Errorf("failed to get content tags: %w", err)
@@ -552,10 +517,8 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 		return nil, "", fmt.Errorf("error iterating over search results: %w", err)
 	}
 
-	// Determine next page token
 	var nextPageToken string
 	if len(contents) > int(pageSize) {
-		// Remove the extra record and use the last record's ID as the next page token
 		contents = contents[:pageSize]
 		nextPageToken = contents[len(contents)-1].ID
 	}
@@ -563,7 +526,6 @@ func (cd *ContentData) SearchContents(ctx context.Context, query string, pageSiz
 	return contents, nextPageToken, nil
 }
 
-// Helper function to get tags for a specific content
 func (cd *ContentData) getContentTags(ctx context.Context, contentID string) ([]string, error) {
 	query := `
 		SELECT t.name 

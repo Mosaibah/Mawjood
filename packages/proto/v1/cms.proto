@@ -8,20 +8,14 @@ option go_package = "mawjood/gen/go/packages/proto/v1";
 import "messages.proto";
 import "google/protobuf/empty.proto";
 
-// Service for content management (admin operations)
 service CMSService {
-  // Creates a new piece of content
   rpc CreateContent(CreateContentRequest) returns (Content);
   
-  // Updates an existing piece of content
   rpc UpdateContent(UpdateContentRequest) returns (Content);
   
-  // Deletes a piece of content
   rpc DeleteContent(DeleteContentRequest) returns (google.protobuf.Empty);
   
-  // Lists all content for admin management
   rpc ListContents(ListContentsRequest) returns (ListContentsResponse);
   
-  // Imports content from external sources
   rpc ImportFromExternal(ImportRequest) returns (ImportResponse);
 } 

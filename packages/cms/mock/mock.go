@@ -10,7 +10,6 @@ import (
 type MockContentData struct{}
 
 func (m *MockContentData) CreateContent(ctx context.Context, content store.Content) (*store.Content, error) {
-	// Mock successful creation with a generated ID
 	content.ID = "550e8400-e29b-41d4-a716-446655440000"
 	content.CreatedAt = time.Now()
 	content.UpdatedAt = time.Now()
@@ -29,7 +28,7 @@ func (m *MockContentData) GetContent(ctx context.Context, id string) (*store.Con
 		ContentType:     "podcast",
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
-		ExternalURL:     "https://example.com",
+		ExternalURL:     "https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG",
 		PlatformName:    "Test Platform",
 	}, nil
 }
@@ -56,7 +55,7 @@ func (m *MockContentData) ListContents(ctx context.Context, pageSize int32, page
 			ContentType:     "podcast",
 			CreatedAt:       time.Now(),
 			UpdatedAt:       time.Now(),
-			ExternalURL:     "https://example.com/1",
+			ExternalURL:     "https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG",
 			PlatformName:    "Test Platform",
 		},
 		{
@@ -70,7 +69,7 @@ func (m *MockContentData) ListContents(ctx context.Context, pageSize int32, page
 			ContentType:     "documentary",
 			CreatedAt:       time.Now(),
 			UpdatedAt:       time.Now(),
-			ExternalURL:     "https://example.com/2",
+			ExternalURL:     "https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG",
 			PlatformName:    "Test Platform",
 		},
 	}, "", nil
@@ -89,7 +88,7 @@ func (m *MockContentData) SearchContents(ctx context.Context, query string, page
 			ContentType:     "podcast",
 			CreatedAt:       time.Now(),
 			UpdatedAt:       time.Now(),
-			ExternalURL:     "https://example.com/search",
+			ExternalURL:     "https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguGh",
 			PlatformName:    "Search Platform",
 		},
 	}, "", nil

@@ -1,11 +1,10 @@
 services:
-  # CockroachDB Database
   cockroachdb:
     image: cockroachdb/cockroach:v25.2.1
     container_name: mawjood-cockroachdb
     hostname: cockroachdb
     ports:
-      - "127.0.0.1:8080:8080"  # Admin UI for system nginx
+      - "127.0.0.1:8080:8080"  
     volumes:
       - cockroach_data:/cockroach/cockroach-data
       - ./certs:/cockroach/certs
@@ -22,7 +21,6 @@ services:
           memory: 2G
           cpus: '1.0'
 
-  # Database initialization
   db-init:
     image: cockroachdb/cockroach:v25.2.1
     container_name: mawjood-db-init
@@ -41,12 +39,11 @@ services:
       - mawjood-network
     restart: "no"
 
-  # CMS Service
   cms-service:
     image: ${DOCKER_USERNAME}/mawjood-cms:latest  
     container_name: mawjood-cms
     ports:
-      - "127.0.0.1:9001:9001"  # Expose gRPC directly to system nginx
+      - "127.0.0.1:9001:9001"  
     environment:
       - DB_HOST=cockroachdb
       - DB_PORT=26257
@@ -66,12 +63,11 @@ services:
           memory: 512M
           cpus: '0.5'
 
-  # Discovery Service
   discovery-service:
     image: ${DOCKER_USERNAME}/mawjood-discovery:latest  
     container_name: mawjood-discovery
     ports:
-      - "127.0.0.1:9002:9002"  # Internal gRPC port
+      - "127.0.0.1:9002:9002"  
     environment:
       - DB_HOST=cockroachdb
       - DB_PORT=26257
@@ -91,12 +87,11 @@ services:
           memory: 512M
           cpus: '0.5'
 
-  # gRPC-UI for CMS Service
   cms-grpc-ui:
     image: fullstorydev/grpcui:latest
     container_name: mawjood-cms-grpc-ui
     ports:
-      - "127.0.0.1:8081:8080"  # Expose web UI to nginx
+      - "127.0.0.1:8081:8080"  
     command: ["-plaintext", "-bind", "0.0.0.0", "-port", "8080", "cms-service:9001"]
     depends_on:
       - cms-service
@@ -104,12 +99,11 @@ services:
       - mawjood-network
     restart: unless-stopped
 
-  # gRPC-UI for Discovery Service  
   discovery-grpc-ui:
     image: fullstorydev/grpcui:latest
     container_name: mawjood-discovery-grpc-ui
     ports:
-      - "127.0.0.1:8082:8080"  # Expose web UI to nginx
+      - "127.0.0.1:8082:8080"  
     command: ["-plaintext", "-bind", "0.0.0.0", "-port", "8080", "discovery-service:9002"]
     depends_on:
       - discovery-service

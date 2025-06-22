@@ -6,14 +6,10 @@ option go_package = "mawjood/gen/go/packages/proto/v1";
 
 import "messages.proto";
 
-// Service for user-facing content discovery and search
 service DiscoveryService {
-  // Searches for content based on a query
   rpc SearchContents(SearchContentsRequest) returns (SearchContentsResponse);
   
-  // Lists all content with pagination
   rpc ListContents(ListContentsRequest) returns (ListContentsResponse);
   
-  // Gets a specific piece of content by ID
   rpc GetContent(GetContentRequest) returns (Content);
 } 

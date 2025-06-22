@@ -1,12 +1,11 @@
 services:
-  # CockroachDB Database
   cockroachdb:
     image: cockroachdb/cockroach:v25.2.1
     container_name: mawjood-cockroachdb
     hostname: cockroachdb
     ports:
-      - "26257:26257"  # SQL port
-      - "8080:8080"    # Admin UI port
+      - "26257:26257"  
+      - "8080:8080"    
     volumes:
       - cockroach_data:/cockroach/cockroach-data
       - ./db_setup.sql:/docker-entrypoint-initdb.d/db_setup.sql
@@ -22,7 +21,6 @@ services:
     networks:
       - mawjood-network
 
-  # Database initialization service
   db-init:
     image: cockroachdb/cockroach:v25.2.1
     container_name: mawjood-db-init
@@ -40,7 +38,6 @@ services:
       - mawjood-network
     restart: "no"
 
-  # CMS Service
   cms-service:
     build:
       context: .
@@ -69,7 +66,6 @@ services:
       - mawjood-network
     restart: unless-stopped
 
-  # Discovery Service
   discovery-service:
     build:
       context: .
@@ -98,7 +94,6 @@ services:
       - mawjood-network
     restart: unless-stopped
 
-  # Optional: gRPC UI for testing
   grpcui-cms:
     image: fullstorydev/grpcui:latest
     container_name: mawjood-grpcui-cms

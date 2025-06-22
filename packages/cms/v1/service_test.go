@@ -36,7 +36,6 @@ func TestCreateContent(t *testing.T) {
 		t.Fatal("Expected response to not be nil")
 	}
 
-	// Verify the response matches our request
 	if resp.Id != "550e8400-e29b-41d4-a716-446655440000" {
 		t.Errorf("Expected ID to be '550e8400-e29b-41d4-a716-446655440000', got '%s'", resp.Id)
 	}

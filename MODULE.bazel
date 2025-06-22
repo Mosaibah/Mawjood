@@ -8,12 +8,10 @@ bazel_dep(name = "rules_proto", version = "7.0.2")
 bazel_dep(name = "protobuf", version = "30.1")
 bazel_dep(name = "protoc-gen-validate", version = "1.2.1.bcr.1")
 
-# Go SDK setup
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.from_file(go_mod = "//:go.mod")
 go_sdk.download(version = "1.23.1")
 
-# Go dependencies - pure Bzlmod way
 go_deps = use_extension("@gazelle//:extensions.bzl", "go_deps")
 go_deps.from_file(go_mod = "//:go.mod")
 use_repo(
@@ -23,9 +21,7 @@ use_repo(
     "org_golang_google_protobuf",
 )
 
-# Gazelle extension
 gazelle = use_extension("@gazelle//:extensions.bzl", "gazelle")
 
-# Protobuf setup
 protobuf = use_extension("@rules_proto//proto:extensions.bzl", "protobuf")
 protobuf.deps()

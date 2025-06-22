@@ -99,29 +99,85 @@ tasks:
       - task build:all
       - echo "✅ Development environment ready!"
 
-  default:
-    desc: Show project status and available commands
+  run:
+    desc: Start local development environment
     cmds:
-      - task status
-      - echo ""
-      - echo "Available commands:"
-      - echo "Build commands:"
-      - echo "  task proto:build      - Build proto files and generate Go code"
-      - echo "  task cms:build        - Build CMS service"
-      - echo "  task discovery:build  - Build Discovery service"
-      - echo "  task build:all        - Build entire project"
-      - echo ""
-      - echo "Run commands:"
-      - echo "  task cms:run          - Run CMS service"
-      - echo "  task discovery:run    - Run Discovery service"
-      - echo ""
-      - echo "Test commands:"
-      - echo "  task test:all         - Run all tests"
-      - echo "  task test:cms         - Run CMS service tests"
-      - echo "  task test:cms:store   - Run CMS store tests"
-      - echo "  task test:cms:service - Run CMS service layer tests"
-      - echo "  task test:discovery   - Run Discovery service tests"
-      - echo "  task test:watch       - Run tests in watch mode (requires ibazel)"
-      - echo ""
-      - echo "Setup commands:"
-      - echo "  task dev:setup        - Setup development environment" 
+      - 'echo "🎯 Starting Mawjood Local Development Environment..."'
+      - 'echo ""'
+      - 'echo "📦 Starting Docker services..."'
+      - docker-compose up -d
+      - 'echo ""'
+      - 'echo "⏳ Waiting for services to be ready..."'
+      - sleep 10
+      - 'echo ""'
+      - 'echo "🎉 Mawjood is now running locally!"'
+      - 'echo ""'
+      - 'echo "📍 Access your services:"'
+      - 'echo "  📊 Database Admin:    http://localhost:8080"'
+      - 'echo "  ⚙️  CMS gRPC UI:       http://localhost:8081"'
+      - 'echo "  🔍 Discovery gRPC UI:  http://localhost:8082"'
+      - 'echo ""'
+      - 'echo "🔧 Useful commands:"'
+      - 'echo "  task logs              - View all service logs"'
+      - 'echo "  task stop              - Stop all services"'
+      - 'echo "  task restart           - Restart services"'
+      - 'echo "  task test              - Run tests"'
+      - 'echo ""'
+      - 'echo "Happy coding! 🚀"'
+
+  stop:
+    desc: Stop local development environment
+    cmds:
+      - 'echo "🛑 Stopping Mawjood services..."'
+      - docker-compose down
+      - 'echo "✅ All services stopped!"'
+
+  restart:
+    desc: Restart local development environment
+    cmds:
+      - 'echo "🔄 Restarting Mawjood services..."'
+      - docker-compose restart
+      - 'echo "✅ Services restarted!"'
+
+  logs:
+    desc: View logs from all services
+    cmds:
+      - docker-compose logs -f
+
+  test:
+    desc: Run all tests
+    cmds:
+      - 'echo "🧪 Running all tests..."'
+      - go test ./packages/cms/...
+      - go test ./packages/discovery/...
+      - 'echo "✅ All tests completed!"'
+
+  clean:
+    desc: Clean up everything (removes data!)
+    cmds:
+      - 'echo "🧹 Cleaning up development environment..."'
+      - 'echo "⚠️  This will remove all database data!"'
+      - docker-compose down -v
+      - docker system prune -f
+      - 'echo "✅ Cleanup complete!"'
+
+  default:
+    desc: Show help and available commands
+    cmds:
+      - 'echo "🎯 Mawjood - Content Discovery Platform"'
+      - 'echo ""'
+      - 'echo "🚀 Quick Start:"'
+      - 'echo "  task run               - Start local development environment"'
+      - 'echo ""'
+      - 'echo "📋 Common Commands:"'
+      - 'echo "  task logs              - View service logs"'
+      - 'echo "  task test              - Run tests"'
+      - 'echo "  task restart           - Restart services"'
+      - 'echo "  task stop              - Stop services"'
+      - 'echo ""'
+      - 'echo "🔧 Development Commands:"'
+      - 'echo "  task proto:build       - Build protobuf files"'
+      - 'echo "  task build:all         - Build entire project"'
+      - 'echo "  task clean             - Clean up (removes data!)"'
+      - 'echo ""'
+      - 'echo "💡 Need help? Check README.md for full documentation"' 

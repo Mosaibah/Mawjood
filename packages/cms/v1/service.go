@@ -27,12 +27,10 @@ func New(store store.Interface) *CMSService {
 func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateContentRequest) (*mawjoodv1.Content, error) {
 	log.Printf("CreateContent started")
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Parse published_at if provided
 	var publishedAt time.Time
 	var err error
 	if req.PublishedAt != "" {
@@ -42,10 +40,8 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 		}
 	}
 
-	// Convert content type to string
 	contentType := cs.protoContentTypeToString(req.ContentType)
 
-	// Create content struct for store
 	content := store.Content{
 		Title:           req.Title,
 		Description:     req.Description,
@@ -58,7 +54,6 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 		PlatformName:    req.PlatformName,
 	}
 
-	// Call store to create content
 	createdContent, err := cs.store.CreateContent(ctx, content)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to create content: %v", err)
@@ -66,19 +61,16 @@ func (cs *CMSService) CreateContent(ctx context.Context, req *mawjoodv1.CreateCo
 
 	log.Printf("CreateContent completed successfully - ID: %s", createdContent.ID)
 
-	// Convert back to proto response
 	return cs.storeContentToProto(createdContent), nil
 }
 
 func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateContentRequest) (*mawjoodv1.Content, error) {
 	log.Printf("UpdateContent started - ID: %s", req.Id)
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Parse published_at if provided
 	var publishedAt time.Time
 	var err error
 	if req.PublishedAt != "" {
@@ -88,10 +80,8 @@ func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateCo
 		}
 	}
 
-	// Convert content type to string
 	contentType := cs.protoContentTypeToString(req.ContentType)
 
-	// Create content struct for store
 	content := store.Content{
 		ID:              req.Id,
 		Title:           req.Title,
@@ -113,19 +103,16 @@ func (cs *CMSService) UpdateContent(ctx context.Context, req *mawjoodv1.UpdateCo
 
 	log.Printf("UpdateContent completed successfully - ID: %s", updatedContent.ID)
 
-	// Convert back to proto response
 	return cs.storeContentToProto(updatedContent), nil
 }
 
 func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteContentRequest) (*emptypb.Empty, error) {
 	log.Printf("DeleteContent started - ID: %s", req.Id)
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Call store to delete content
 	err := cs.store.DeleteContent(ctx, req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to delete content: %v", err)
@@ -139,18 +126,15 @@ func (cs *CMSService) DeleteContent(ctx context.Context, req *mawjoodv1.DeleteCo
 func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListContentsRequest) (*mawjoodv1.ListContentsResponse, error) {
 	log.Printf("ListContents started")
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// Call store to list contents
 	contents, nextPageToken, err := cs.store.ListContents(ctx, req.PageSize, req.PageToken)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to list contents: %v", err)
 	}
 
-	// Convert store contents to proto contents
 	protoContents := make([]*mawjoodv1.Content, len(contents))
 	for i, content := range contents {
 		protoContents[i] = cs.storeContentToProto(&content)
@@ -167,16 +151,13 @@ func (cs *CMSService) ListContents(ctx context.Context, req *mawjoodv1.ListConte
 func (cs *CMSService) ImportFromExternal(ctx context.Context, req *mawjoodv1.ImportRequest) (*mawjoodv1.ImportResponse, error) {
 	log.Printf("ImportFromExternal started")
 
-	// Use protocol buffer validation
 	if err := req.Validate(); err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "validation failed: %v", err)
 	}
 
-	// This is a stretch goal implementation - for now, return unimplemented
 	return nil, status.Error(codes.Unimplemented, "ImportFromExternal is not yet implemented")
 }
 
-// Helper function to convert proto ContentType to string
 func (cs *CMSService) protoContentTypeToString(contentType mawjoodv1.ContentType) string {
 	switch contentType {
 	case mawjoodv1.ContentType_CONTENT_TYPE_PODCAST:
@@ -184,11 +165,10 @@ func (cs *CMSService) protoContentTypeToString(contentType mawjoodv1.ContentType
 	case mawjoodv1.ContentType_CONTENT_TYPE_DOCUMENTARY:
 		return "documentary"
 	default:
-		return "podcast" // default fallback
+		return "podcast"
 	}
 }
 
-// Helper function to convert string to proto ContentType
 func (cs *CMSService) stringToProtoContentType(contentType string) mawjoodv1.ContentType {
 	switch contentType {
 	case "podcast":
@@ -196,11 +176,10 @@ func (cs *CMSService) stringToProtoContentType(contentType string) mawjoodv1.Con
 	case "documentary":
 		return mawjoodv1.ContentType_CONTENT_TYPE_DOCUMENTARY
 	default:
-		return mawjoodv1.ContentType_CONTENT_TYPE_PODCAST // default fallback
+		return mawjoodv1.ContentType_CONTENT_TYPE_PODCAST
 	}
 }
 
-// Helper function to convert store.Content to proto Content
 func (cs *CMSService) storeContentToProto(content *store.Content) *mawjoodv1.Content {
 	var publishedAt string
 	if !content.PublishedAt.IsZero() {

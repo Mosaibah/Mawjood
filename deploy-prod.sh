@@ -67,7 +67,7 @@ echo -e "${GREEN}✅ Database authentication configured${NC}"
 
 echo -e "${YELLOW}🌐 Setting up nginx configuration...${NC}"
 
-# Copy nginx configuration
+# Copy nginx configuration (initial setup)
 sudo cp nginx-mawjood.conf /etc/nginx/sites-available/mawjood
 
 # Enable the site
@@ -84,10 +84,10 @@ fi
 
 echo -e "${YELLOW}🔒 Setting up SSL certificates...${NC}"
 echo -e "${YELLOW}Run this command to get SSL certificates:${NC}"
-echo -e "${GREEN}sudo certbot --nginx -d ${DOMAIN} -d cms.${DOMAIN}${NC}"
+echo -e "${GREEN}sudo certbot --nginx -d ${DOMAIN}${NC}"
 echo ""
-echo -e "${YELLOW}After SSL setup, replace nginx config with:${NC}"
-echo -e "${GREEN}sudo cp nginx-mawjood-post-ssl.conf /etc/nginx/sites-available/mawjood${NC}"
+echo -e "${YELLOW}After SSL setup, replace nginx config with gRPC-UI version:${NC}"
+echo -e "${GREEN}sudo cp nginx-mawjood-grpcui.conf /etc/nginx/sites-available/mawjood${NC}"
 echo -e "${GREEN}sudo systemctl reload nginx${NC}"
 
 echo ""
@@ -96,12 +96,12 @@ echo ""
 echo -e "${YELLOW}📍 Your services will be available at:${NC}"
 echo -e "• Main site: https://${DOMAIN}"
 echo -e "• Admin UI: https://${DOMAIN}/admin/"
+echo -e "• CMS gRPC UI: https://${DOMAIN}/cms/"
+echo -e "• Discovery gRPC UI: https://${DOMAIN}/api/"
 echo -e "• Health check: https://${DOMAIN}/health"
-echo -e "• CMS gRPC: cms.${DOMAIN}:443"
-echo -e "• Discovery gRPC: ${DOMAIN}:444"
 echo ""
 echo -e "${YELLOW}⚡ Next steps:${NC}"
-echo -e "1. Run: ${GREEN}sudo certbot --nginx -d ${DOMAIN} -d cms.${DOMAIN}${NC}"
-echo -e "2. Run: ${GREEN}sudo cp nginx-mawjood-post-ssl.conf /etc/nginx/sites-available/mawjood${NC}"
+echo -e "1. Run: ${GREEN}sudo certbot --nginx -d ${DOMAIN}${NC}"
+echo -e "2. Run: ${GREEN}sudo cp nginx-mawjood-grpcui.conf /etc/nginx/sites-available/mawjood${NC}"
 echo -e "3. Run: ${GREEN}sudo systemctl reload nginx${NC}"
 echo -e "4. Test your endpoints!" 
