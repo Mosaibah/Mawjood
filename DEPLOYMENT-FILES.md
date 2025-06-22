@@ -63,7 +63,11 @@ After cleanup, here are the essential files for Mawjood production deployment:
 ## 🎯 **Deployment Workflow**
 
 ```bash
-# 1. Create environment
+# 1. Clone project to server
+sudo git clone https://github.com/yourusername/Mawjood.git /var/www/mawjood
+cd /var/www/mawjood
+
+# 2. Create environment
 cat > .env.production << EOF
 DOCKER_USERNAME=your_username
 DB_PASSWORD=secure_password
@@ -71,13 +75,14 @@ DOMAIN=mawjood.mosaibah.com
 EMAIL=your@email.com
 EOF
 
-# 2. Deploy everything
+# 3. Deploy everything
+chmod +x deploy-prod.sh
 ./deploy-prod.sh
 
-# 3. Setup SSL
+# 4. Setup SSL
 sudo certbot --nginx -d mawjood.mosaibah.com -d cms.mawjood.mosaibah.com
 
-# 4. Update to final config
+# 5. Update to final config
 sudo cp nginx-mawjood-post-ssl.conf /etc/nginx/sites-available/mawjood
 sudo systemctl reload nginx
 ```

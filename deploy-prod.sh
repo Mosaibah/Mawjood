@@ -2,6 +2,7 @@
 set -e
 
 echo "🚀 Deploying Mawjood to Production..."
+echo "📍 Working directory: $(pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -9,30 +10,38 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Check if .env.production exists
-if [ ! -f .env.production ]; then
-    echo -e "${RED}❌ .env.production file not found!${NC}"
-    echo "Create .env.production with:"
+# Check if .env exists
+if [ ! -f .env ]; then
+    echo -e "${RED}❌ .env file not found!${NC}"
+    echo "Create .env with:"
     echo "DOCKER_USERNAME=your_dockerhub_username"
-    echo "DB_PASSWORD=your_secure_password"
+    echo "DB_PASSWORD=\$(openssl rand -base64 32)"
     echo "DOMAIN=mawjood.mosaibah.com"
     echo "EMAIL=your@email.com"
     exit 1
 fi
 
 # Load environment variables
-source .env.production
+source .env
 
-echo -e "${YELLOW}📦 Building and pushing Docker images...${NC}"
+# Export variables for Docker Compose
+export DOCKER_USERNAME
+export DB_PASSWORD
+export DOMAIN
+export EMAIL
 
-# Build and push images
-docker build -f Dockerfile.cms -t ${DOCKER_USERNAME}/mawjood-cms:latest .
-docker build -f Dockerfile.discovery -t ${DOCKER_USERNAME}/mawjood-discovery:latest .
+echo -e "${YELLOW}📦 Pulling Docker images from registry...${NC}"
 
-docker push ${DOCKER_USERNAME}/mawjood-cms:latest
-docker push ${DOCKER_USERNAME}/mawjood-discovery:latest
+# Pull pre-built images from registry (much faster than building on server)
+docker pull ${DOCKER_USERNAME}/mawjood-cms:latest
+docker pull ${DOCKER_USERNAME}/mawjood-discovery:latest
 
-echo -e "${GREEN}✅ Docker images pushed successfully${NC}"
+echo -e "${GREEN}✅ Docker images pulled successfully${NC}"
+echo -e "${YELLOW}💡 To build and push new images, run locally:${NC}"
+echo -e "   docker build -f Dockerfile.cms -t ${DOCKER_USERNAME}/mawjood-cms:latest ."
+echo -e "   docker build -f Dockerfile.discovery -t ${DOCKER_USERNAME}/mawjood-discovery:latest ."
+echo -e "   docker push ${DOCKER_USERNAME}/mawjood-cms:latest"
+echo -e "   docker push ${DOCKER_USERNAME}/mawjood-discovery:latest"
 
 echo -e "${YELLOW}🐳 Starting Docker services...${NC}"
 
@@ -40,6 +49,21 @@ echo -e "${YELLOW}🐳 Starting Docker services...${NC}"
 docker-compose -f docker-compose.prod.yml up -d
 
 echo -e "${GREEN}✅ Docker services started${NC}"
+
+echo -e "${YELLOW}🔐 Setting up database authentication...${NC}"
+
+# Wait for CockroachDB to be ready
+sleep 15
+
+# Set root password in database to match .env file
+echo -e "${YELLOW}Setting root password in CockroachDB...${NC}"
+docker-compose -f docker-compose.prod.yml exec -T cockroachdb cockroach sql --certs-dir=/cockroach/certs --host=localhost:26257 --execute="ALTER USER root WITH PASSWORD '$DB_PASSWORD';" || echo -e "${YELLOW}⚠️  Password may already be set${NC}"
+
+# Restart services to ensure they connect with the password
+echo -e "${YELLOW}Restarting application services...${NC}"
+docker-compose -f docker-compose.prod.yml restart cms-service discovery-service
+
+echo -e "${GREEN}✅ Database authentication configured${NC}"
 
 echo -e "${YELLOW}🌐 Setting up nginx configuration...${NC}"
 

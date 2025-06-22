@@ -7,26 +7,46 @@ Simple deployment using Docker + System Nginx + Certbot
 - Digital Ocean droplet (4GB+ recommended)
 - Docker & Docker Compose installed
 - Nginx installed
+- Git installed
 - Domain pointing to your server: `mawjood.mosaibah.com` & `cms.mawjood.mosaibah.com`
 
 ## 🔧 Setup
 
-### 1. Create Environment File
+### 1. Build and Push Images (Local Machine)
 
 ```bash
-# Create .env.production
-cat > .env.production << EOF
+# Create .env with your Docker Hub username
+cat > .env << EOF
+DOCKER_USERNAME=your_dockerhub_username
+DB_PASSWORD=$(openssl rand -base64 32)
+DOMAIN=mawjood.mosaibah.com
+EMAIL=your@email.com
+EOF
+
+# Build and push images to Docker Hub
+./build-and-push.sh
+```
+
+### 2. Deploy on Server
+
+```bash
+# Clone to /var/www (on server)
+sudo git clone https://github.com/yourusername/Mawjood.git /var/www/mawjood
+
+# Set proper ownership
+sudo chown -R $USER:$USER /var/www/mawjood
+cd /var/www/mawjood
+
+# Create same .env file on server
+cat > .env << EOF
 DOCKER_USERNAME=your_dockerhub_username
 DB_PASSWORD=your_secure_password_here
 DOMAIN=mawjood.mosaibah.com
 EMAIL=your@email.com
 EOF
-```
 
-### 2. Deploy Services
-
-```bash
-# Run the deployment script
+# Deploy (pulls images and configures everything)
+chmod +x deploy-prod.sh
 ./deploy-prod.sh
 ```
 
