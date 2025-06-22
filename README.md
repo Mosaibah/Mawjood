@@ -18,10 +18,12 @@ A microservices-based content management and discovery platform built with Go, g
 ### Demo Screenshots
 
 *CMS Service gRPC UI Interface:*
-<!-- Add CMS gRPC UI screenshot here -->
+<img width="999" alt="image" src="https://github.com/user-attachments/assets/c614daee-ffbc-48f6-b0a7-447c7507d600" />
+
 
 *Discovery Service gRPC UI Interface:*
-<!-- Add Discovery gRPC UI screenshot here -->
+<img width="845" alt="image" src="https://github.com/user-attachments/assets/8b251f3a-19ca-41f3-8437-90401683aa6e" />
+
 
 ## 🛠️ Tech Stack
 
