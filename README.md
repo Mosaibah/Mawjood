@@ -2,24 +2,6 @@
 
 A microservices-based content management and discovery platform built with Go, gRPC, and CockroachDB.
 
-## 🏗️ Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Discovery     │    │      CMS        │    │   CockroachDB   │
-│   Service       │    │    Service      │    │    Database     │
-│   (Port 9002)   │    │  (Port 9001)    │    │   (Port 26257)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐
-                    │      Nginx      │
-                    │   (SSL + gRPC)  │
-                    │   Port 443      │
-                    └─────────────────┘
-```
-
 ## 🚀 Services
 
 - **Discovery Service**: User-facing content search and retrieval
@@ -27,20 +9,20 @@ A microservices-based content management and discovery platform built with Go, g
 - **gRPC-UI**: Web interfaces for both gRPC services
 - **CockroachDB**: Distributed SQL database with full-text search
 
-## 📍 Endpoints
+## 📍 Live Demo Endpoints
 
-- **Main API**: `https://mawjood.mosaibah.com`
 - **CMS gRPC UI**: `https://mawjood.mosaibah.com/cms/`
 - **Discovery gRPC UI**: `https://mawjood.mosaibah.com/api/`
 - **Health Check**: `https://mawjood.mosaibah.com/health`
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Go 1.24+ with gRPC
-- **Database**: CockroachDB v25.2.1
-- **Deployment**: Docker + Docker Compose
-- **Proxy**: Nginx with SSL termination
-- **Build**: Bazel for Go code generation
+- **GoLang** 
+- **CockroachDB** 
+- **Bazel** 
+- **gRPC** 
+- **Nginx** 
+- **DigitalOcean** 
 
 ## 🔧 Local Development
 
@@ -50,19 +32,12 @@ A microservices-based content management and discovery platform built with Go, g
 - [Task](https://taskfile.dev/) (optional but recommended)
 
 
-**LIVE Endpoints:**
-- Main API: `https://mawjood.mosaibah.com`
-- CMS UI: `https://mawjood.mosaibah.com/cms/`
-- Discovery UI: `https://mawjood.mosaibah.com/api/`
-
-
 ### Local Development
 
 ```bash
-# Clone and start everything
-git clone https://github.com/yourusername/Mawjood.git
-cd Mawjood
-task run  # or: docker-compose up -d
+git clone https://github.com/mosaibah/mawjood.git
+cd mawjood
+task run  
 ```
 
 ### Local Endpoints
@@ -81,23 +56,23 @@ task stop     # Stop everything
 task clean    # Clean up (removes data!)
 ```
 
-### Manual Commands (if not using Task)
-
-```bash
-# Start
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop
-docker-compose down
-
-# Run tests
-go test ./packages/cms/... ./packages/discovery/...
-```
 ## 📚 Documentation
 
-- **[Deployment Guide](DEPLOYMENT-GUIDE.md)** - Complete deployment instructions
-- **[Server Setup](SERVER-SETUP.md)** - Server preparation and configuration
-- **[Project Structure](notes.md)** - Architecture and folder organization
+- **[General Documentation](docs/docs.md)** - Complete deployment instructions
+- **[Project Structure](docs/folder-structure)** - Architecture and folder organization
+
+## Sample Data
+Here is a sample request body for creating a content:
+```json
+{
+  "tags": [],
+  "title": "test",
+  "description": "tewt",
+  "language": "ar",
+  "durationSeconds": 444,
+  "publishedAt": "2006-01-02T15:04:05Z",
+  "contentType": "CONTENT_TYPE_DOCUMENTARY",
+  "url": "https://youtu.be/mcrAH6g7CFk?si=vMHT2MSD6kAPlguG",
+  "platformName": "Youtube"
+}
+```
